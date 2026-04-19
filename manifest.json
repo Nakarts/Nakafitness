@@ -1,15 +1,14 @@
 {
   "name": "NakaFitness",
-  "short_name": "NakaFit",
-  "start_url": "./index.html",
+  "short_name": "Naka",
+  "description": "Tracker de musculation PPL premium",
+  "start_url": "index.html",
   "display": "standalone",
-  "background_color": "#0a0a0f",
-  "theme_color": "#c8ff00",
+  "background_color": "#080808",
+  "theme_color": "#080808",
+  "orientation": "portrait",
   "icons": [
-    {
-      "src": "https://cdn-icons-png.flaticon.com/512/1048/1048941.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    }
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ]
 }
