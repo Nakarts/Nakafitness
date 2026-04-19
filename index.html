@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NakaFitness Elite+</title>
+<link rel="manifest" href="manifest.json">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body{font-family:sans-serif;background:#0a0a0f;color:#fff;margin:0}
+header{padding:15px;text-align:center;background:#111;font-weight:bold}
+.container{padding:15px}
+.card{background:#111;padding:15px;border-radius:12px;margin-bottom:15px}
+button{padding:12px;border:none;border-radius:10px;background:#c8ff00;color:#000;font-weight:bold;width:100%;margin-top:10px}
+.exercise img{width:100%;border-radius:10px;margin-top:10px}
+.timer{font-size:22px;text-align:center;margin-top:10px;color:#c8ff00}
+input{width:60px;padding:5px;border-radius:5px;border:none;text-align:center;margin:5px}
+canvas{background:#111;border-radius:10px;padding:10px}
+.topbar{display:flex;gap:10px;margin-bottom:10px}
+.topbar button{flex:1}
+</style>
+</head>
+<body>
+
+<header>🏋️ NakaFitness ELITE+</header>
+
+<div class="container">
+
+<div class="card">
+<h2>Choix de séance</h2>
+<div class="topbar" id="selector"></div>
+<button onclick="startWorkout()">Démarrer</button>
+</div>
+
+<div id="workout"></div>
+
+<div class="card">
+<h2>Progression</h2>
+<canvas id="chart"></canvas>
+</div>
+
+</div>
+
+<script>
+
+const workouts = [
+{
+ name:"PULL",
+ exercises:[
+ {name:"Tractions", reps:8, sets:4, rest:90, img:"https://i.imgur.com/8QZ7Z8b.jpg"},
+ {name:"Rowing", reps:10, sets:4, rest:90, img:"https://i.imgur.com/2R8vZ5E.jpg"}
+ ]
+},
+{
+ name:"PUSH",
+ exercises:[
+ {name:"Chest Press", reps:10, sets:4, rest:90, img:"https://i.imgur.com/9QeK6G5.jpg"},
+ {name:"Shoulder Press", reps:10, sets:3, rest:60, img:"https://i.imgur.com/4xQ4QpP.jpg"}
+ ]
+},
+{
+ name:"LEGS",
+ exercises:[
+ {name:"Hack Squat", reps:10, sets:4, rest:90, img:"https://i.imgur.com/jy6Y3pR.jpg"},
+ {name:"Leg Curl", reps:12, sets:3, rest:60, img:"https://i.imgur.com/Y7p3V3g.jpg"}
+ ]
+}
+];
+
+let selectedWorkout = 0;
+let history = JSON.parse(localStorage.getItem("history")||"{}");
+let stats = JSON.parse(localStorage.getItem("stats")||"{}");
+let timer;
+
+function initSelector(){
+ const sel = document.getElementById("selector");
+ sel.innerHTML = "";
+ workouts.forEach((w,i)=>{
+  sel.innerHTML += `<button onclick="selectWorkout(${i})">${w.name}</button>`;
+ });
+}
+
+function selectWorkout(i){
+ selectedWorkout = i;
+}
+
+function startWorkout(){
+ const container = document.getElementById("workout");
+ container.innerHTML = "";
+ const w = workouts[selectedWorkout];
+
+ w.exercises.forEach((ex,i)=>{
+  const last = history[ex.name] || "-";
+
+  container.innerHTML += `
+  <div class="card exercise">
+    <h3>${ex.name}</h3>
+    <p>${ex.sets} x ${ex.reps}</p>
+    <p>Dernier: ${last}</p>
+    <img src="${ex.img}">
+    <div>
+      <input type="number" placeholder="kg" id="kg-${i}">
+      <input type="number" placeholder="reps" id="reps-${i}">
+    </div>
+    <button onclick="validateSet(${i}, '${ex.name}', ${ex.rest})">Valider série</button>
+  </div>`;
+ });
+}
+
+function validateSet(i, name, rest){
+ const kg = parseInt(document.getElementById(`kg-${i}`).value);
+ const reps = parseInt(document.getElementById(`reps-${i}`).value);
+
+ if(kg && reps){
+  history[name] = kg+"kg x "+reps;
+  localStorage.setItem("history", JSON.stringify(history));
+
+  if(!stats[name]) stats[name] = [];
+  stats[name].push(kg);
+
+  localStorage.setItem("stats", JSON.stringify(stats));
+  updateChart(name);
+ }
+
+ startRest(rest);
+}
+
+function startRest(time){
+ clearInterval(timer);
+ let div = document.querySelector(".timer");
+ if(!div){
+  div = document.createElement("div");
+  div.className="timer";
+  document.body.appendChild(div);
+ }
+
+ timer = setInterval(()=>{
+  div.innerText = "Repos: " + time + "s";
+  time--;
+  if(time < 0){
+    clearInterval(timer);
+    div.innerText = "";
+  }
+ },1000);
+}
+
+let chart;
+function updateChart(name){
+ const data = stats[name] || [];
+ const ctx = document.getElementById("chart");
+
+ if(chart) chart.destroy();
+
+ chart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: data.map((_,i)=>"S"+(i+1)),
+    datasets: [{data:data}]
+  }
+ });
+}
+
+initSelector();
+
+if("serviceWorker" in navigator){
+ navigator.serviceWorker.register("sw.js");
+}
+
+</script>
+
+</body>
+</html>
