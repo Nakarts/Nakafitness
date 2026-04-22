@@ -4,7 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NakaFitness</title>
+
+  <!-- PWA -->
   <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#080808" />
 
   <style>
     :root {
@@ -25,12 +28,20 @@
       padding: 20px;
     }
 
-    h1 { font-size: 28px; font-weight: 700; }
-    p { color: var(--sub); font-size: 14px; }
-
     .container {
       max-width: 420px;
       margin: auto;
+    }
+
+    h1 {
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    p {
+      color: var(--sub);
+      font-size: 13px;
     }
 
     .card {
@@ -60,7 +71,7 @@
       display: flex;
       gap: 10px;
       overflow-x: auto;
-      margin-top: 15px;
+      margin-top: 10px;
     }
 
     .chip {
@@ -97,7 +108,7 @@
       left: 0;
       right: 0;
       padding: 15px;
-      background: linear-gradient(transparent, rgba(0,0,0,0.8));
+      background: linear-gradient(transparent, rgba(0,0,0,0.85));
     }
 
     .btn {
@@ -130,7 +141,6 @@
       color: black;
       box-shadow: 0 10px 30px rgba(255,140,42,0.5);
     }
-
   </style>
 </head>
 
@@ -170,20 +180,21 @@
   <div class="fab">+</div>
 
   <script>
-    // FIX MKEYS (évite double déclaration)
+    // Fix erreur MKEYS
     window.MKEYS = window.MKEYS || {
       version: "1.0",
       app: "NakaFitness"
     };
 
     console.log("MKEYS OK:", window.MKEYS);
+
+    // Service Worker
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw.js")
+        .then(() => console.log("Service Worker OK"))
+        .catch(err => console.log("SW error", err));
+    }
   </script>
+
 </body>
 </html>
-<script>
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("sw.js")
-      .then(() => console.log("Service Worker OK"))
-      .catch(err => console.log("SW error", err));
-  }
-</script>
