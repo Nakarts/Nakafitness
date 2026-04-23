@@ -938,24 +938,9 @@ function confirmBack(){
 function cancelSession(){
   cfmDlg("Annuler la s\u00e9ance ?","Toutes les donn\u00e9es seront perdues.",function(){ if(durTmr){clearInterval(durTmr);durTmr=null;} skipT(); activeSid=null; wsets={}; toast("S\u00e9ance annul\u00e9e"); go("home"); },"Annuler","danger");
 }
-function mkThumb(img, name, exId){
-  var inner = img
-    ? "<img src='"+img+"' alt='' id='excimg_"+exId+"'>"
-    : "<span class='exc-ph' id='excimg_"+exId+"'>"+name.split(" ").slice(0,2).join(" ")+"</span>";
-  return inner+"<input type='file' accept='image/*' style='position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%' onchange='importExcImg(""+exId+"",this)' title='Photo'>";
-}
-function importExcImg(exId, inp){
-  var f=inp.files[0]; if(!f)return;
-  var r=new FileReader(); r.onload=function(e){ var img=new Image(); img.onload=function(){
-    var max=300,sc=Math.min(max/img.width,max/img.height,1);
-    var cv=document.createElement("canvas"); cv.width=img.width*sc; cv.height=img.height*sc;
-    cv.getContext("2d").drawImage(img,0,0,cv.width,cv.height);
-    saveImg(exId,cv.toDataURL("image/jpeg",.75));
-    // Update thumbnail live in workout
-    var el=document.getElementById("excimg_"+exId);
-    if(el){ var newImg=document.createElement("img"); newImg.src=getImg(exId); newImg.id="excimg_"+exId; el.parentNode.replaceChild(newImg,el); }
-    toast("Photo ajoutée ✓");
-  }; img.src=e.target.result; }; r.readAsDataURL(f);
+function mkThumb(img, name){
+  if(img) return "<img src='"+img+"' alt=''>";
+  return "<span class='exc-ph'>"+name.split(" ").slice(0,2).join(" ")+"</span>";
 }
 function rWo(){
   var sess = findSess(activeSid);
@@ -995,7 +980,7 @@ function rWo(){
     card.className = "exc"; card.id = "exc_"+ex.id;
     card.innerHTML =
       "<div class='exc-hd' onclick=\"tglEx('"+ex.id+"')\">"+
-      "<div class='exc-th'>"+mkThumb(img,ex.name,ex.id)+doneBarH+"</div>"+
+      "<div class='exc-th'>"+mkThumb(img,ex.name)+doneBarH+"</div>"+
       "<div class='exc-body'>"+
       "<div class='exc-name'>"+ex.name+" "+prB+" "+suB+"</div>"+
       "<div class='exc-meta' id='sub_"+ex.id+"'>"+ex.sets+"\u00d7"+ex.reps+" \u2014 "+dc+"/"+data.length+" faites</div>"+
@@ -1493,6 +1478,7 @@ window.addEventListener("load",function(){
     navigator.serviceWorker.register("./sw.js").then(function(){}).catch(function(){});
   }
 });
+
 </script>
 </body>
 </html>
