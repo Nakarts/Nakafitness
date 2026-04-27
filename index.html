@@ -373,6 +373,64 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .empty{font-size:13px;color:var(--t4);text-align:center;padding:20px 0}
 canvas{display:block;width:100%}
+
+/* MOBILITÉ */
+.mob-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:12px;padding:15px 18px;margin:0 18px 12px;width:calc(100% - 36px);background:rgba(212,255,60,.08);border:1px solid rgba(212,255,60,.25);border-radius:var(--rr);cursor:pointer;transition:background .12s}
+.mob-btn:active{background:rgba(212,255,60,.14);transform:scale(.98)}
+.mob-btn-ic{width:42px;height:42px;border-radius:11px;background:var(--a);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.mob-btn-ic svg{width:20px;height:20px;color:#000;stroke-width:2.5}
+.mob-btn-info{flex:1;text-align:left}
+.mob-btn-t{font-family:"Syne",sans-serif;font-size:15px;font-weight:800;text-transform:uppercase;color:var(--t0)}
+.mob-btn-s{font-size:11px;color:var(--t2);margin-top:2px}
+.mob-btn-arr{color:rgba(212,255,60,.5)}
+.mob-btn-arr svg{width:16px;height:16px}
+
+.mob-player{display:none;position:fixed;inset:0;z-index:500;background:var(--bg);flex-direction:column;overflow:hidden}
+.mob-player.show{display:flex}
+.mob-hdr{height:54px;background:rgba(8,8,8,.93);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--b0);display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0}
+.mob-close{width:36px;height:36px;border-radius:var(--rs);background:var(--l2);border:1px solid var(--b1);color:var(--t1);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .1s}
+.mob-close:active{transform:scale(.88)}
+.mob-close svg{width:16px;height:16px}
+.mob-hdr-info{flex:1}
+.mob-hdr-t{font-family:"Syne",sans-serif;font-size:16px;font-weight:800;text-transform:uppercase}
+.mob-hdr-prog{font-size:11px;color:var(--t3);margin-top:1px}
+.mob-hdr-pct{font-family:"Syne",sans-serif;font-size:12px;font-weight:800;background:rgba(212,255,60,.1);color:var(--a);padding:4px 10px;border-radius:7px}
+
+.mob-prog-bar{height:3px;background:var(--l3);flex-shrink:0}
+.mob-prog-fill{height:100%;background:var(--a);transition:width .5s linear}
+
+.mob-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 24px;min-height:0}
+.mob-bloc-badge{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 12px;border-radius:20px;margin-bottom:16px;background:var(--l2);border:1px solid var(--b1);color:var(--t3)}
+.mob-bloc-badge.active{background:rgba(212,255,60,.1);border-color:rgba(212,255,60,.25);color:var(--a)}
+.mob-ex-name{font-family:"Syne",sans-serif;font-size:26px;font-weight:800;text-align:center;line-height:1.2;color:var(--t0);margin-bottom:12px}
+.mob-ex-note{font-size:13px;color:var(--t2);text-align:center;line-height:1.5;margin-bottom:28px;max-width:320px}
+
+.mob-ring-wrap{position:relative;width:160px;height:160px;margin-bottom:24px}
+.mob-ring-wrap svg{display:block}
+.mob-ring-bg{fill:none;stroke:var(--l2);stroke-width:10}
+.mob-ring-pr{fill:none;stroke:var(--a);stroke-width:10;stroke-linecap:round;transform-origin:50% 50%;transform:rotate(-90deg);transition:stroke-dasharray .9s linear}
+.mob-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.mob-ring-t{font-family:"Syne",sans-serif;font-size:48px;font-weight:800;color:var(--t0);line-height:1}
+.mob-ring-s{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-top:4px}
+
+.mob-next{font-size:11px;color:var(--t3);text-align:center;margin-bottom:20px}
+.mob-next strong{color:var(--t2)}
+
+.mob-btns{display:flex;gap:12px;width:100%;max-width:300px}
+.mob-cbtn{flex:1;padding:14px;border-radius:var(--rr);border:1px solid var(--b2);background:var(--l2);color:var(--t1);font-family:"Syne",sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .12s;text-transform:uppercase;letter-spacing:.04em}
+.mob-cbtn.main{background:var(--a);color:#000;border-color:var(--a)}
+.mob-cbtn.pause-btn{background:var(--l3);color:var(--t0);border-color:var(--b2)}
+.mob-cbtn:active{transform:scale(.93)}
+
+.mob-done{display:none;position:fixed;inset:0;z-index:510;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px}
+.mob-done.show{display:flex}
+.mob-done-emoji{font-size:56px;margin-bottom:16px}
+.mob-done-t{font-family:"Syne",sans-serif;font-size:32px;font-weight:800;text-transform:uppercase;color:var(--a);margin-bottom:8px}
+.mob-done-s{font-size:15px;color:var(--t2);line-height:1.6;margin-bottom:32px;max-width:280px}
+.mob-done-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:300px;margin-bottom:28px}
+.mob-done-stat{background:var(--l1);border:1px solid var(--b0);border-radius:var(--rr);padding:14px}
+.mob-done-sv{font-family:"Syne",sans-serif;font-size:28px;font-weight:800;color:var(--a);line-height:1}
+.mob-done-sl{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-top:4px}
 .shd-t{font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
 </style>
 </head>
@@ -400,7 +458,17 @@ canvas{display:block;width:100%}
   <div class="act-hd"><strong>Activit&#233;</strong><span>r&#233;cente</span></div>
   <div class="date-strip" id="dateStrip"></div>
   <div class="act-wrap" id="actWrap"></div>
-  <div class="sg-wrap"><div class="sg-hd">S&#233;ances du programme</div><div class="sg" id="sgGrid"></div></div>
+  <div style="padding:0 0 4px" onclick="openMobPlayer()">
+  <div class="mob-btn">
+    <div class="mob-btn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M6.6 6.6L5.2 5.2M17.4 6.6l1.4-1.4M6.6 17.4l-1.4 1.4M17.4 17.4l1.4 1.4M12 2v2M12 20v2M2 12h2M20 12h2"/></svg></div>
+    <div class="mob-btn-info">
+      <div class="mob-btn-t">Mobilit&#233; R&#233;veil</div>
+      <div class="mob-btn-s">15 min &middot; 5 blocs &middot; Gainage dynamique</div>
+    </div>
+    <div class="mob-btn-arr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+  </div>
+</div>
+<div class="sg-wrap"><div class="sg-hd">S&#233;ances du programme</div><div class="sg" id="sgGrid"></div></div>
 </div>
 <div class="pg" id="pg_workout">
   <div class="wo-bar">
@@ -491,6 +559,54 @@ canvas{display:block;width:100%}
     </div>
   </div>
 </div>
+<!-- MOBILITÉ PLAYER -->
+<div class="mob-player" id="mobPlayer">
+  <div class="mob-hdr">
+    <button class="mob-close" onclick="closeMobPlayer()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <div class="mob-hdr-info">
+      <div class="mob-hdr-t">Mobilit&#233; R&#233;veil</div>
+      <div class="mob-hdr-prog" id="mobHdrProg">Ex. 1/16</div>
+    </div>
+    <div class="mob-hdr-pct" id="mobHdrPct">0%</div>
+  </div>
+  <div class="mob-prog-bar"><div class="mob-prog-fill" id="mobProgFill" style="width:0%"></div></div>
+  <div class="mob-body">
+    <div class="mob-bloc-badge active" id="mobBlocBadge">Bloc 1</div>
+    <div class="mob-ex-name" id="mobExName">Respirations</div>
+    <div class="mob-ex-note" id="mobExNote">Main sur ventre, inspire 4s, expire 6s</div>
+    <div class="mob-ring-wrap">
+      <svg width="160" height="160" viewBox="0 0 160 160">
+        <circle class="mob-ring-bg" cx="80" cy="80" r="70"/>
+        <circle class="mob-ring-pr" id="mobRingPr" cx="80" cy="80" r="70" fill="none" stroke="#D4FF3C" stroke-width="10" stroke-dasharray="0 439.8"/>
+      </svg>
+      <div class="mob-ring-center">
+        <div class="mob-ring-t" id="mobRingT">60</div>
+        <div class="mob-ring-s" id="mobRingS">secondes</div>
+      </div>
+    </div>
+    <div class="mob-next" id="mobNext">Suivant : <strong>Rotations chevilles</strong></div>
+    <div class="mob-btns">
+      <div class="mob-cbtn" onclick="mobSkipBack()">&#9664;&#9664; Préc.</div>
+      <div class="mob-cbtn main" id="mobPlayBtn" onclick="mobToggle()">D&#233;marrer</div>
+      <div class="mob-cbtn" onclick="mobSkipNext()">Suiv. &#9654;&#9654;</div>
+    </div>
+  </div>
+</div>
+
+<!-- MOBILITÉ DONE -->
+<div class="mob-done" id="mobDone">
+  <div class="mob-done-emoji">&#127774;</div>
+  <div class="mob-done-t">C'est fait !</div>
+  <div class="mob-done-s">15 minutes de mobilit&#233; compl&#232;tes. Ton corps est pr&#234;t pour la journ&#233;e.</div>
+  <div class="mob-done-stats">
+    <div class="mob-done-stat"><div class="mob-done-sv">16</div><div class="mob-done-sl">Exercices</div></div>
+    <div class="mob-done-stat"><div class="mob-done-sv">~15</div><div class="mob-done-sl">Minutes</div></div>
+    <div class="mob-done-stat"><div class="mob-done-sv">5</div><div class="mob-done-sl">Blocs</div></div>
+    <div class="mob-done-stat"><div class="mob-done-sv">&#10003;</div><div class="mob-done-sl">Gainage</div></div>
+  </div>
+  <button class="btn" onclick="closeMobDone()" style="width:100%;max-width:300px">Termin&#233; &#127775;</button>
+</div>
+
 <nav class="nav">
   <button class="nb on" id="nb_home" onclick="go('home')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -1467,6 +1583,143 @@ function drawLine(id,data,lbls){
     ctx.fillStyle="#444"; ctx.font="9px sans-serif"; ctx.textAlign="center";
     if(lbls[i]&&(i===0||i===data.length-1||data.length<=6)) ctx.fillText(lbls[i],px(i),H-4);
   }
+}
+
+
+// ===== MOBILITÉ RÉVEIL =====
+var MOB_ROUTINE = [
+  // Bloc 1 - Activation douce (3 min)
+  {bloc:"Bloc 1 \u2014 Activation douce", name:"Respirations diaphragmatiques", note:"Main sur ventre \u00b7 inspire 4s, expire 6s \u00b7 laisse le ventre se gonfler", dur:60},
+  {bloc:"Bloc 1 \u2014 Activation douce", name:"Rotations de cheville", note:"Cercles lents \u00b7 10 dans chaque sens \u00b7 chaque c\u00f4t\u00e9", dur:30},
+  {bloc:"Bloc 1 \u2014 Activation douce", name:"Genoux au ventre + rotation lombaire", note:"Allongg\u00e9 \u00b7 genoux pli\u00e9s qui basculent gauche\/droite \u00b7 lentement", dur:60},
+  {bloc:"Bloc 1 \u2014 Activation douce", name:"Chat-Vache", note:"\u00c0 4 pattes \u00b7 dos rond puis creux \u00b7 flux continu, respiration ample", dur:30},
+  // Bloc 2 - Colonne & hanches (4 min)
+  {bloc:"Bloc 2 \u2014 Colonne & Hanches", name:"Thread the needle", note:"\u00c0 4 pattes \u00b7 un bras passe sous l\u2019autre \u00b7 rotation thoracique \u00b7 chaque c\u00f4t\u00e9", dur:60},
+  {bloc:"Bloc 2 \u2014 Colonne & Hanches", name:"Hip flexor stretch dynamique", note:"Fente basse \u00b7 bassin vers l\u2019avant\/arri\u00e8re en oscillation douce \u00b7 chaque jambe", dur:60},
+  {bloc:"Bloc 2 \u2014 Colonne & Hanches", name:"Pigeon dynamique", note:"Entr\u00e9e\/sortie lente du pigeon \u00b7 ne pas tenir \u00b7 chaque c\u00f4t\u00e9", dur:60},
+  {bloc:"Bloc 2 \u2014 Colonne & Hanches", name:"World's Greatest Stretch", note:"Fente avant \u00b7 coude au sol \u00b7 rotation du tronc vers le ciel \u00b7 altern\u00e9", dur:60},
+  // Bloc 3 - Gainage dynamique (4 min)
+  {bloc:"Bloc 3 \u2014 Gainage Dynamique", name:"Dead Bug", note:"Dos au sol \u00b7 bras\/jambe oppos\u00e9s s\u2019\u00e9tirent en alternance \u00b7 bas du dos coll\u00e9 au sol", dur:60},
+  {bloc:"Bloc 3 \u2014 Gainage Dynamique", name:"Bear Crawl Hold + Tap", note:"\u00c0 4 pattes genoux \u00e0 5 cm du sol \u00b7 taper \u00e9paule gauche\/droite en alternance", dur:60},
+  {bloc:"Bloc 3 \u2014 Gainage Dynamique", name:"Planche dynamique", note:"Planche \u2192 monter sur les mains \u2192 redescendre sur les coudes \u00b7 altern\u00e9", dur:60},
+  {bloc:"Bloc 3 \u2014 Gainage Dynamique", name:"Bird Dog", note:"\u00c0 4 pattes \u00b7 bras et jambe oppos\u00e9s tendus \u00b7 hold 2s \u00b7 alterner", dur:60},
+  // Bloc 4 - Épaules & thorax debout (2 min)
+  {bloc:"Bloc 4 \u2014 \u00c9paules & Thorax", name:"Bras en croix \u2014 cercles progressifs", note:"Petits cercles \u2192 grands cercles \u00b7 avant puis arri\u00e8re", dur:30},
+  {bloc:"Bloc 4 \u2014 \u00c9paules & Thorax", name:"Chest opener dynamique", note:"Bras tendus derri\u00e8re \u00b7 ouverture de poitrine \u00b7 rebonds doux", dur:30},
+  {bloc:"Bloc 4 \u2014 \u00c9paules & Thorax", name:"Rotation thoracique debout", note:"Pieds \u00e9cart\u00e9s \u00b7 bras crois\u00e9s \u00b7 torsions altern\u00e9es gauche\/droite", dur:60},
+  // Bloc 5 - Bas du corps debout (2 min)
+  {bloc:"Bloc 5 \u2014 Bas du Corps", name:"Hip circles", note:"Mains sur hanches \u00b7 cercles du bassin comme hula hoop \u00b7 chaque sens", dur:30},
+  {bloc:"Bloc 5 \u2014 Bas du Corps", name:"Squat profond + ouverture", note:"Descente lente \u00b7 coudes poussent les genoux en sortie", dur:30},
+  {bloc:"Bloc 5 \u2014 Bas du Corps", name:"Leg swings avant\/arri\u00e8re", note:"Debout \u00b7 jambe qui balance librement comme un pendule \u00b7 chaque jambe", dur:30},
+  {bloc:"Bloc 5 \u2014 Bas du Corps", name:"Leg swings lat\u00e9raux", note:"M\u00eame chose en croisant devant \u00b7 chaque jambe", dur:30}
+];
+
+var mobIdx = 0;
+var mobRunning = false;
+var mobRem = 0;
+var mobIv = null;
+var MOB_CIRC = 439.8;
+
+function openMobPlayer(){
+  mobIdx = 0; mobRunning = false; mobRem = 0;
+  if(mobIv) clearInterval(mobIv);
+  var e = document.getElementById("mobPlayer");
+  if(e){ e.classList.add("show"); mobUpdateUI(); }
+}
+function closeMobPlayer(){
+  if(mobIv){ clearInterval(mobIv); mobIv = null; }
+  mobRunning = false;
+  var e = document.getElementById("mobPlayer");
+  if(e) e.classList.remove("show");
+  var d = document.getElementById("mobDone");
+  if(d) d.classList.remove("show");
+}
+function closeMobDone(){
+  closeMobPlayer();
+  go("home");
+}
+
+function mobUpdateUI(){
+  var ex = MOB_ROUTINE[mobIdx];
+  if(!ex) return;
+  var total = MOB_ROUTINE.length;
+  var pct = Math.round(mobIdx / total * 100);
+
+  document.getElementById("mobHdrProg").textContent = "Ex. " + (mobIdx+1) + "/" + total;
+  document.getElementById("mobHdrPct").textContent = pct + "%";
+  document.getElementById("mobProgFill").style.width = pct + "%";
+  document.getElementById("mobBlocBadge").textContent = ex.bloc;
+  document.getElementById("mobExName").textContent = ex.name;
+  document.getElementById("mobExNote").textContent = ex.note;
+
+  if(mobRem <= 0) mobRem = ex.dur;
+  document.getElementById("mobRingT").textContent = mobRem;
+  document.getElementById("mobRingS").textContent = "secondes";
+
+  var fillPct = mobRem / ex.dur;
+  var dashArr = MOB_CIRC * fillPct;
+  document.getElementById("mobRingPr").setAttribute("stroke-dasharray", dashArr + " " + (MOB_CIRC - dashArr));
+
+  var next = MOB_ROUTINE[mobIdx + 1];
+  var nextEl = document.getElementById("mobNext");
+  if(next) nextEl.innerHTML = "Suivant : <strong>" + next.name + "</strong>";
+  else nextEl.innerHTML = "<strong>Dernier exercice !</strong>";
+
+  var btn = document.getElementById("mobPlayBtn");
+  if(btn) btn.textContent = mobRunning ? "Pause" : (mobRem < MOB_ROUTINE[mobIdx].dur ? "Reprendre" : "D\u00e9marrer");
+}
+
+function mobToggle(){
+  if(mobRunning){
+    clearInterval(mobIv); mobRunning = false;
+  } else {
+    if(mobRem <= 0) mobRem = MOB_ROUTINE[mobIdx].dur;
+    mobRunning = true;
+    mobIv = setInterval(function(){
+      mobRem--;
+      mobUpdateUI();
+      if(mobRem <= 0){
+        // Play beep
+        try{
+          var ctx = new(window.AudioContext||window.webkitAudioContext)();
+          var o = ctx.createOscillator(); var g = ctx.createGain();
+          o.connect(g); g.connect(ctx.destination);
+          o.frequency.value = 880; o.type = "sine";
+          g.gain.setValueAtTime(0.4, ctx.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+          o.start(ctx.currentTime); o.stop(ctx.currentTime + 0.3);
+          setTimeout(function(){ ctx.close(); }, 500);
+        }catch(e){}
+        if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
+        // Next or done
+        mobIdx++;
+        if(mobIdx >= MOB_ROUTINE.length){
+          clearInterval(mobIv); mobRunning = false;
+          document.getElementById("mobDone").classList.add("show");
+        } else {
+          mobRem = 0;
+          mobUpdateUI();
+        }
+      }
+    }, 1000);
+  }
+  var btn = document.getElementById("mobPlayBtn");
+  if(btn){ btn.textContent = mobRunning ? "Pause" : "Reprendre"; btn.className = mobRunning ? "mob-cbtn pause-btn" : "mob-cbtn main"; }
+}
+
+function mobSkipNext(){
+  if(mobIv){ clearInterval(mobIv); mobIv = null; } mobRunning = false;
+  mobIdx = Math.min(mobIdx + 1, MOB_ROUTINE.length - 1);
+  mobRem = 0; mobUpdateUI();
+  document.getElementById("mobPlayBtn").textContent = "D\u00e9marrer";
+  document.getElementById("mobPlayBtn").className = "mob-cbtn main";
+}
+function mobSkipBack(){
+  if(mobIv){ clearInterval(mobIv); mobIv = null; } mobRunning = false;
+  mobIdx = Math.max(mobIdx - 1, 0);
+  mobRem = 0; mobUpdateUI();
+  document.getElementById("mobPlayBtn").textContent = "D\u00e9marrer";
+  document.getElementById("mobPlayBtn").className = "mob-cbtn main";
 }
 
 // ===== INIT =====
