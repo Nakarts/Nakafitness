@@ -21,6 +21,15 @@
   --sh:0 4px 20px rgba(0,0,0,.5);--shs:0 2px 10px rgba(0,0,0,.4);
   --rr:14px;--rs:9px;--nav:64px;
 }
+body.light-mode{
+  --a:#3d7a00;--bg:#f0f0ec;--l1:#ffffff;--l2:#f4f4f0;--l3:#e8e8e4;--l4:#dcdcd8;
+  --b0:rgba(0,0,0,.06);--b1:rgba(0,0,0,.1);--b2:rgba(0,0,0,.16);
+  --t0:#111;--t1:#222;--t2:#555;--t3:#888;--t4:#aaa;
+  --grn:#2a9a5c;--red:#d94040;
+}
+body.light-mode .hdr{background:rgba(240,240,236,.96)!important}
+body.light-mode .nav{background:rgba(240,240,236,.98)!important}
+body.light-mode .mob-player,body.light-mode .mob-done{background:var(--bg)}
 html{overflow-x:hidden;-webkit-font-smoothing:antialiased}
 body{background:var(--bg);color:var(--t0);font-family:"DM Sans",system-ui,sans-serif;font-size:15px;line-height:1.5;min-height:100dvh;overflow-x:hidden;padding-bottom:calc(var(--nav) + env(safe-area-inset-bottom) + 8px)}
 ::-webkit-scrollbar{display:none}
@@ -448,6 +457,9 @@ canvas{display:block;width:100%}
 .db-nm{font-size:14px;font-weight:600;color:var(--t0)}
 .db-dt{font-size:11px;color:var(--t3);margin-top:2px}
 .db-pick{width:28px;height:28px;border-radius:7px;background:rgba(212,255,60,.1);border:1px solid rgba(212,255,60,.25);color:var(--a);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex-shrink:0}
+
+.act-del-btn{width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,82,82,.2);background:rgba(255,82,82,.06);color:#ff5252;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .12s;margin-left:auto}
+.act-del-btn:active{background:rgba(255,82,82,.2);transform:scale(.88)}
 </style>
 </head>
 <body>
@@ -462,7 +474,7 @@ canvas{display:block;width:100%}
     </svg>
     <span class="brand-name">Naka<em>Fitness</em></span>
   </div>
-  <div class="hdr-av" onclick="openProfModal()" id="hdrAv">
+  <button id="themeBtn" onclick="toggleNakaTheme()" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--b1);background:var(--l2);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-right:4px;transition:all .12s;flex-shrink:0">&#127769;</button><div class="hdr-av" onclick="openProfModal()" id="hdrAv">
     <img id="hdrAvImg" src="" style="display:none" alt="">
     <div class="hdr-av-ph" id="hdrAvPh">N</div>
   </div>
@@ -476,7 +488,17 @@ canvas{display:block;width:100%}
   <div class="act-hd"><strong>Activit&eacute;</strong><span>r&eacute;cente</span></div>
   <div class="date-strip" id="dateStrip"></div>
   <div class="act-wrap" id="actWrap"></div>
-  <div class="sg-wrap"><div class="sg-hd">S&eacute;ances du programme</div><div class="sg" id="sg"></div></div>
+  <div onclick="openMobPlayer()" style="display:flex;align-items:center;gap:12px;padding:14px 16px;margin:0 0 10px;background:rgba(212,255,60,.07);border:1px solid rgba(212,255,60,.22);border-radius:13px;cursor:pointer">
+  <div style="width:40px;height:40px;border-radius:10px;background:#D4FF3C;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M6.6 6.6L5.2 5.2M17.4 6.6l1.4-1.4M6.6 17.4l-1.4 1.4M17.4 17.4l1.4 1.4M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
+  </div>
+  <div style="flex:1">
+    <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;text-transform:uppercase;color:var(--t0)">Mobilit&#233; R&#233;veil</div>
+    <div style="font-size:11px;color:var(--t2);margin-top:2px">15 min &#183; 5 blocs &#183; Gainage dynamique</div>
+  </div>
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#D4FF3C" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+</div>
+<div class="sg-wrap"><div class="sg-hd">S&eacute;ances du programme</div><div class="sg" id="sg"></div></div>
 </div>
 
 <!-- WORKOUT -->
@@ -892,6 +914,12 @@ function go(name){
 }
 
 // ===== HOME =====
+function delHistory(id){
+  cfmDialog("Supprimer ?","Cette séance sera supprimée définitivement.",function(){
+    S.history=S.history.filter(function(h){return h.id!==id;});
+    saveS(); rHome(); toast("Supprimé");
+  },"Supprimer","danger");
+}
 function rHome(){
   updateAllAv();
   var h = S.history;
@@ -959,7 +987,8 @@ function rHome(){
         "<div class='act-info'><div class='act-n'>"+e.sessionName+"</div>"+
         "<div class='act-m'>"+(e.setsCompleted||0)+"/"+(e.totalSets||0)+" s\u00e9ries \u00b7 "+(e.duration?fmtSec(e.duration):"\u2014")+(e.cardio?" \u00b7 "+e.cardio+(e.cardioDur?" "+e.cardioDur+"min":""):"")+
         "</div></div>"+
-        "<div><div class='act-kv'>"+(e.kcal||"\u2014")+"</div><div class='act-kl'>kcal</div></div></div>";
+        "<div><div class='act-kv'>"+(e.kcal||"\u2014")+"</div><div class='act-kl'>kcal</div></div>"+
+        "<button class='act-del-btn' onclick='delHistory(\"" +e.id+"\")' title='Supprimer'>&#10005;</button></div>";
     }
     setHTML("actWrap",ah);
   }
@@ -1196,6 +1225,20 @@ function skipT(){
   if("serviceWorker" in navigator){ navigator.serviceWorker.ready.then(function(r){ if(r.active) r.active.postMessage({type:"TIMER_CANCEL"}); }).catch(function(){}); }
 }
 function addT(s){ timerRem=Math.max(5,timerRem+s); timerTot=Math.max(30,timerTot+s); updRestUI(); }
+function toggleNakaTheme(){
+  var btn=gid("themeBtn"); var isLight=document.body.classList.toggle("light-mode");
+  if(btn) btn.textContent=isLight?"☀️":"🌙";
+  try{ localStorage.setItem("nf2_theme",isLight?"light":"dark"); }catch(e){}
+}
+// Load saved theme
+(function(){
+  try{
+    if(localStorage.getItem("nf2_theme")==="light"){
+      document.body.classList.add("light-mode");
+      var btn=gid("themeBtn"); if(btn) btn.textContent="☀️";
+    }
+  }catch(e){}
+})();
 function beep(){
   try{
     var ctx=new(window.AudioContext||window.webkitAudioContext)();
@@ -1893,10 +1936,12 @@ function mobSkipBack(){
 loadAll();
 // Restore active workout after refresh
 (function(){
+  updAvatars();
   if(loadWo()){
     var found=false;
     for(var i=0;i<S.sessions.length;i++) if(S.sessions[i].id===activeSid){found=true;break;}
     if(found){
+      rHome();
       go("wo"); rWo();
       if(wStart) durTmr=setInterval(function(){ rWoDur(); },10000);
       if(timerRem>0){
@@ -1909,10 +1954,9 @@ loadAll();
           if(timerRem<=0){ clearInterval(timerIv);timerIv=null;beep();var rb2=gid("restBar");if(rb2)rb2.classList.remove("show"); }
         },500);
       }
-    } else { clearWo(); }
-  }
+    } else { clearWo(); rHome(); }
+  } else { rHome(); }
 })();
-updAvatars(); rHome();
 if(typeof Notification!=="undefined"&&Notification.permission==="default") Notification.requestPermission();
 rHome();
 window.addEventListener("load",function(){
