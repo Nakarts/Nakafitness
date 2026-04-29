@@ -1372,7 +1372,7 @@ function saveEx(){
 }
 function cfmDelEx(id){
   var nm=""; for(var i=0;i<S.sessions.length;i++) for(var j=0;j<S.sessions[i].exercises.length;j++) if(S.sessions[i].exercises[j].id===id){nm=S.sessions[i].exercises[j].name;break;}
-  cfmDialog("Supprimer ?","\\""+nm+"\\" sera supprim\u00e9 d\u00e9finitivement.",function(){ for(var i=0;i<S.sessions.length;i++) S.sessions[i].exercises=S.sessions[i].exercises.filter(function(e){return e.id!==id;}); delete S.wlog[id]; delImg(id); saveS(); rSessList(); toast("Supprim\u00e9"); },"Supprimer","danger");
+  cfmDialog("Supprimer ?",nm+" sera supprimé définitivement.",function(){ for(var i=0;i<S.sessions.length;i++) S.sessions[i].exercises=S.sessions[i].exercises.filter(function(e){return e.id!==id;}); delete S.wlog[id]; delImg(id); saveS(); rSessList(); toast("Supprimé"); },"Supprimer","danger");
 }
 function importImg(exId,inp){
   var f=inp.files[0]; if(!f) return;
