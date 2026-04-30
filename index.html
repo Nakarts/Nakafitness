@@ -1958,11 +1958,11 @@ loadAll();
           if(timerRem<=0){ clearInterval(timerIv);timerIv=null;beep();var rb2=gid("restBar");if(rb2)rb2.classList.remove("show"); }
         },500);
       }
-    } else { clearWo(); go("home"); }
-  } else { go("home"); }
+    } else { clearWo(); requestAnimationFrame(function(){ go("home"); }); }
+  } else { requestAnimationFrame(function(){ go("home"); }); }
 })();
 if(typeof Notification!=="undefined"&&Notification.permission==="default") Notification.requestPermission();
-rHome();
+requestAnimationFrame(function(){ rHome(); });
 window.addEventListener("load",function(){
   if("serviceWorker" in navigator){
     navigator.serviceWorker.register("./sw.js").then(function(){ console.log("SW OK"); }).catch(function(e){ console.log("SW fail",e); });
