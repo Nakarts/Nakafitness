@@ -900,6 +900,8 @@ function badge(type){
   return "<span class='bdg "+p[0]+"'>"+p[1]+"</span>";
 }
 function el(id){ return document.getElementById(id); }
+function gid(id){ return document.getElementById(id); }
+function setH(id,h){ var e=document.getElementById(id); if(e) e.innerHTML=h; }
 function setHTML(id,h){ var e=el(id); if(e)e.innerHTML=h; }
 
 // ===== NAVIGATION =====
@@ -1226,16 +1228,19 @@ function skipT(){
 }
 function addT(s){ timerRem=Math.max(5,timerRem+s); timerTot=Math.max(30,timerTot+s); updRestUI(); }
 function toggleNakaTheme(){
-  var btn=gid("themeBtn"); var isLight=document.body.classList.toggle("light-mode");
-  if(btn) btn.textContent=isLight?"☀️":"🌙";
-  try{ localStorage.setItem("nf2_theme",isLight?"light":"dark"); }catch(e){}
+  try{
+    var isLight=document.body.classList.toggle("light-mode");
+    var btn=document.getElementById("themeBtn");
+    if(btn) btn.innerHTML=isLight?"&#9728;&#65039;":"&#127769;";
+    localStorage.setItem("nf2_theme",isLight?"light":"dark");
+  }catch(e){}
 }
 // Load saved theme
 (function(){
   try{
     if(localStorage.getItem("nf2_theme")==="light"){
       document.body.classList.add("light-mode");
-      var btn=gid("themeBtn"); if(btn) btn.textContent="☀️";
+      var btn=document.getElementById("themeBtn"); if(btn) btn.innerHTML="&#9728;&#65039;";
     }
   }catch(e){}
 })();
@@ -1941,7 +1946,6 @@ loadAll();
     var found=false;
     for(var i=0;i<S.sessions.length;i++) if(S.sessions[i].id===activeSid){found=true;break;}
     if(found){
-      rHome();
       go("wo"); rWo();
       if(wStart) durTmr=setInterval(function(){ rWoDur(); },10000);
       if(timerRem>0){
@@ -1954,8 +1958,8 @@ loadAll();
           if(timerRem<=0){ clearInterval(timerIv);timerIv=null;beep();var rb2=gid("restBar");if(rb2)rb2.classList.remove("show"); }
         },500);
       }
-    } else { clearWo(); rHome(); }
-  } else { rHome(); }
+    } else { clearWo(); go("home"); }
+  } else { go("home"); }
 })();
 if(typeof Notification!=="undefined"&&Notification.permission==="default") Notification.requestPermission();
 rHome();
