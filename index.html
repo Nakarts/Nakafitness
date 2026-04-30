@@ -1939,14 +1939,16 @@ function mobSkipBack(){
 
 // ===== INIT =====
 loadAll();
-// Restore active workout after refresh
-(function(){
-  updAvatars();
+updAvatars();
+// Render home immediately — pg_home is already active in HTML
+rHome();
+// Restore active workout AFTER home is rendered (50ms delay)
+setTimeout(function(){
   if(loadWo()){
     var found=false;
     for(var i=0;i<S.sessions.length;i++) if(S.sessions[i].id===activeSid){found=true;break;}
     if(found){
-      go("wo"); rWo();
+      go("workout"); rWo();
       if(wStart) durTmr=setInterval(function(){ rWoDur(); },10000);
       if(timerRem>0){
         var rb=gid("restBar"); if(rb) rb.classList.add("show");
@@ -1958,11 +1960,10 @@ loadAll();
           if(timerRem<=0){ clearInterval(timerIv);timerIv=null;beep();var rb2=gid("restBar");if(rb2)rb2.classList.remove("show"); }
         },500);
       }
-    } else { clearWo(); requestAnimationFrame(function(){ go("home"); }); }
-  } else { requestAnimationFrame(function(){ go("home"); }); }
-})();
+    } else { clearWo(); }
+  }
+},50);
 if(typeof Notification!=="undefined"&&Notification.permission==="default") Notification.requestPermission();
-requestAnimationFrame(function(){ rHome(); });
 window.addEventListener("load",function(){
   if("serviceWorker" in navigator){
     navigator.serviceWorker.register("./sw.js").then(function(){ console.log("SW OK"); }).catch(function(e){ console.log("SW fail",e); });
