@@ -1,67 +1,21 @@
-/* NakaFitness Service Worker — cache app-shell + background timer notifications */
-const CACHE = 'nakafit-v1';
-const ASSETS = ['./nakafitness.html', './manifest.json'];
-
-self.addEventListener('install', (e) => {
-  self.skipWaiting();
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS).catch(() => {})));
+const CACHE='thiathie-v3';
+const ASSETS=['./','./nakafitness.html','./thiathie_stocks.html','./manifest.json'];
+self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).catch(()=>{}));self.skipWaiting()});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim()});
+self.addEventListener('fetch',e=>{
+  if(e.request.method!=='GET')return;
+  e.respondWith(fetch(e.request).then(r=>{const cp=r.clone();caches.open(CACHE).then(c=>c.put(e.request,cp)).catch(()=>{});return r}).catch(()=>caches.match(e.request)));
 });
-
-self.addEventListener('activate', (e) => {
-  e.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
-    ).then(() => self.clients.claim())
-  );
-});
-
-self.addEventListener('fetch', (e) => {
-  const req = e.request;
-  if (req.method !== 'GET') return;
-  e.respondWith(
-    caches.match(req).then((cached) => {
-      const net = fetch(req).then((res) => {
-        if (res && res.status === 200 && res.type === 'basic') {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
-        }
-        return res;
-      }).catch(() => cached);
-      return cached || net;
-    })
-  );
-});
-
-/* Background timer */
-let timerId = null;
-self.addEventListener('message', (e) => {
-  const data = e.data || {};
-  if (data.type === 'TIMER') {
-    if (timerId) clearTimeout(timerId);
-    const delay = Math.max(0, (data.endTime || 0) - Date.now());
-    timerId = setTimeout(() => {
-      self.registration.showNotification('NakaFitness', {
-        body: data.msg || 'Repos terminé 💪',
-        icon: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" rx="42" fill="%230a0a0a"/><text x="50%25" y="54%25" text-anchor="middle" dominant-baseline="middle" font-family="Arial Black" font-size="90" font-weight="900" fill="%23D4FF3C">NF</text></svg>',
-        badge: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><circle cx="48" cy="48" r="48" fill="%23D4FF3C"/></svg>',
-        vibrate: [200, 100, 200, 100, 400],
-        tag: 'naka-timer',
-        renotify: true,
-        requireInteraction: false
-      });
-      timerId = null;
-    }, delay);
-  } else if (data.type === 'TIMER_CANCEL') {
-    if (timerId) { clearTimeout(timerId); timerId = null; }
+let timer=null;
+self.addEventListener('message',ev=>{
+  const {type,endAt,label}=ev.data||{};
+  if(type==='TIMER_SET'){
+    if(timer)clearTimeout(timer);
+    const ms=endAt-Date.now();
+    if(ms<=0)return;
+    timer=setTimeout(()=>{
+      self.registration.showNotification('NakaFitness',{body:label||'Temps écoulé',vibrate:[200,100,200],tag:'rest',icon:'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 64 64\'%3E%3Crect width=\'64\' height=\'64\' rx=\'14\' fill=\'%23ff3b3b\'/%3E%3C/svg%3E'});
+    },ms);
   }
 });
-
-self.addEventListener('notificationclick', (e) => {
-  e.notification.close();
-  e.waitUntil(
-    self.clients.matchAll({ type: 'window' }).then((list) => {
-      for (const c of list) { if ('focus' in c) return c.focus(); }
-      if (self.clients.openWindow) return self.clients.openWindow('./nakafitness.html');
-    })
-  );
-});
+self.addEventListener('notificationclick',e=>{e.notification.close();e.waitUntil(self.clients.matchAll({type:'window'}).then(cs=>cs[0]?cs[0].focus():self.clients.openWindow('./')))});
