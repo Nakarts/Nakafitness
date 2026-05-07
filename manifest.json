@@ -1,27 +1,12 @@
 {
-  "name": "NakaFitness",
-  "short_name": "NakaFit",
-  "description": "Coach d'entraînement personnel — suivi de séances, chrono et progression",
-  "start_url": "./nakafitness.html",
-  "scope": "./",
+  "name": "Thiathie Suite",
+  "short_name": "Thiathie",
+  "start_url": "./",
   "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#0a0a0a",
-  "theme_color": "#0a0a0a",
-  "lang": "fr",
-  "categories": ["fitness", "health", "lifestyle"],
+  "background_color": "#0b0f1a",
+  "theme_color": "#0b0f1a",
   "icons": [
-    {
-      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='42' fill='%230a0a0a'/><text x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-family='Arial Black,sans-serif' font-size='90' font-weight='900' fill='%23D4FF3C'>NF</text></svg>",
-      "sizes": "192x192",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='112' fill='%230a0a0a'/><text x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-family='Arial Black,sans-serif' font-size='240' font-weight='900' fill='%23D4FF3C'>NF</text></svg>",
-      "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    }
+    {"src":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%2316a34a'/%3E%3Ctext x='50%25' y='62%25' text-anchor='middle' font-family='Arial Black' font-size='110' fill='white'%3ET%3C/text%3E%3C/svg%3E","sizes":"192x192","type":"image/svg+xml"},
+    {"src":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%2316a34a'/%3E%3Ctext x='50%25' y='62%25' text-anchor='middle' font-family='Arial Black' font-size='300' fill='white'%3ET%3C/text%3E%3C/svg%3E","sizes":"512x512","type":"image/svg+xml"}
   ]
 }
