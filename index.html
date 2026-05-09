@@ -55,9 +55,10 @@ input,select,textarea{background:var(--surface-2);color:var(--text);border:1px s
 .tab.active{color:var(--primary)}
 .tab svg{width:22px;height:22px;pointer-events:none}
 .tab span{pointer-events:none}
-.tab.center{flex:0 0 auto;margin-top:-14px}
-.tab.center .bubble{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;display:grid;place-items:center;box-shadow:0 4px 14px -4px var(--primary);border:3px solid var(--surface)}
-.tab.center .bubble svg{width:22px;height:22px}
+.tab.center{flex:0 0 auto}
+.tab.center .bubble{width:32px;height:32px;border-radius:50%;background:var(--surface-2);color:var(--muted);display:grid;place-items:center;border:1px solid var(--border)}
+.tab.center.active .bubble{color:var(--primary);border-color:var(--primary)}
+.tab.center .bubble svg{width:18px;height:18px}
 .tab.center span{margin-top:2px;color:var(--text)}
 .live-bar{position:fixed;left:10px;right:10px;bottom:88px;background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;border-radius:16px;padding:12px 14px;display:none;align-items:center;gap:8px;box-shadow:var(--shadow);z-index:51;max-width:740px;margin:0 auto}
 .live-bar.on{display:flex}
@@ -67,7 +68,9 @@ input,select,textarea{background:var(--surface-2);color:var(--text);border:1px s
 .sheet{background:var(--surface);width:100%;max-width:760px;margin:0 auto;border-radius:24px 24px 0 0;padding:18px;max-height:90vh;overflow:auto}
 .exo{background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:12px;margin-bottom:10px}
 .exo h4{margin:0 0 6px;font-size:15px}
-.exo .imgslot{width:100%;height:90px;border-radius:10px;background:var(--surface);border:1px dashed var(--border);display:grid;place-items:center;color:var(--muted);font-size:12px;cursor:pointer;overflow:hidden;margin-top:6px}
+.exo .imgslot{width:100%;max-width:240px;aspect-ratio:3/4;border-radius:10px;background:var(--surface);border:1px dashed var(--border);display:grid;place-items:center;color:var(--muted);font-size:12px;cursor:pointer;overflow:hidden;margin:6px auto 0}
+.crop-wrap{position:relative;width:100%;aspect-ratio:3/4;background:#000;border-radius:12px;overflow:hidden;touch-action:none}
+.crop-wrap img{position:absolute;left:0;top:0;width:100%;height:auto;user-select:none;-webkit-user-drag:none}
 .exo .imgslot img{width:100%;height:100%;object-fit:cover}
 .set-row{display:grid;grid-template-columns:30px 1fr 1fr 44px;gap:8px;align-items:center;margin-top:6px}
 .set-row input{padding:7px 9px;font-size:13px}
@@ -104,7 +107,6 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="logo"><svg viewBox="0 0 64 64" fill="white"><path d="M18 50V14h8l16 24V14h6v36h-8L24 28v22z"/><circle cx="14" cy="50" r="2.5" opacity=".7"/><circle cx="50" cy="14" r="2.5" opacity=".7"/></svg></div>
     <div><div class="brand">NakaFitness <small>Train · Track · Progress</small></div></div>
     <div class="spacer"></div>
-    <button class="icon-btn" id="notifBtn" title="Activer notifications">🔔</button>
     <button class="icon-btn" id="themeBtn" title="Thème">◐</button>
     <button class="icon-btn" id="paletteBtn" title="Couleurs">◉</button>
   </header>
@@ -126,7 +128,6 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
         <h3 class="title" style="margin:0">☀️ Routine réveil</h3>
         <button class="btn primary sm" id="startWakeBtn">▶ Démarrer</button>
       </div>
-      <div class="sub">Mobilité douce · ~8 min · enchaînement automatique</div>
     </div>
 
     <div class="card">
@@ -223,7 +224,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
 
   <section id="view-mob" class="hidden">
     <div class="card">
-      <h3 class="title">☀️ Mobilité réveil — 5 blocs</h3>
+      <h3 class="title">☀️ Mobilité réveil</h3>
       <div class="sub">~8 min · à faire au lever</div>
       <div id="mobList" style="margin-top:10px"></div>
       <button class="btn primary" style="width:100%;margin-top:10px" id="startWakeBtn2">▶ Lancer la routine</button>
@@ -253,6 +254,17 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
   <hr/>
   <div class="row" style="justify-content:space-between"><span>Mode</span>
     <div class="row"><button class="btn sm" data-theme="light">Clair</button><button class="btn sm" data-theme="dark">Nuit</button></div>
+  </div>
+</div></div>
+
+<div class="modal" id="cropModal"><div class="sheet">
+  <h3 class="title">Recadrer la photo</h3>
+  <div class="sub">Glissez verticalement pour cadrer · zoom ci-dessous</div>
+  <div class="crop-wrap" id="cropWrap" style="margin-top:10px"><img id="cropImg" alt=""/></div>
+  <div style="margin-top:10px"><label class="sub">Zoom</label><input type="range" id="cropZoom" min="1" max="3" step="0.05" value="1" style="width:100%"/></div>
+  <div class="row" style="justify-content:space-between;margin-top:10px">
+    <button class="btn ghost sm" id="cropCancel">Annuler</button>
+    <button class="btn primary" id="cropOk">Valider</button>
   </div>
 </div></div>
 
@@ -365,47 +377,66 @@ renderPalettes();
 document.querySelectorAll('[data-theme]').forEach(b=>b.addEventListener('click',()=>{S.theme=b.dataset.theme;applyTheme();save()}));
 
 // avatar removed
-// Notifications
-$('notifBtn').addEventListener('click',async()=>{
-  if(!('Notification' in window))return alert('Notifications non supportées');
-  const p=await Notification.requestPermission();
-  if(p==='granted'){alert('Notifications activées ✓ Le bip de fin de repos sonnera même hors du site (selon votre OS).');}
-  else alert('Notifications refusées. Activez-les dans les réglages du navigateur pour entendre le bip hors du site.');
-});
+// Notifications (bouton retiré, fonctionnalité optionnelle)
 // Wake Lock pour garder l'écran allumé pendant la séance
 let wakeLock=null;
 async function acquireWakeLock(){try{if('wakeLock' in navigator){wakeLock=await navigator.wakeLock.request('screen')}}catch(e){}}
 function releaseWakeLock(){try{wakeLock?.release();wakeLock=null}catch(e){}}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&S.activeSession&&!wakeLock)acquireWakeLock()});
 
-// Préset images d'exercices fournies
-const PRESET_IMG={
-  'Curl Haltères Marteau':'exercises/03131301-Dumbbell-Hammer-Curl_Forearm_720.gif',
-  'Curl marteau':'exercises/03131301-Dumbbell-Hammer-Curl_Forearm_720.gif',
-  'Tractions':'exercises/chin-up-traction-supination.gif',
-  'Traction Pronation':'exercises/chin-up-traction-supination.gif',
-  'Curl pupitre':'exercises/curl-pupitre-machine-prechargee.gif',
-  'Dips':'exercises/dips.jpg',
-  'Fentes Marchées':'exercises/fentes-marchees-avec-sandbag-cat.jpg',
-  'Hack Squat':'exercises/hack-squa.gif',
-  'Leg Curl Assis':'exercises/leg-curl-assis-machine.gif',
-  'Leg curl':'exercises/leg-curl-assis-machine.gif',
-  'Abduction hanches':'exercises/lever-seated-hip-abduction.jpg',
-  'Adductor Machine':'exercises/lever-seated-hip-abduction.jpg',
-  'Shoulder Press Machine':'exercises/lever-seated-shoulder-press.jpg',
-  'Développé militaire':'exercises/lever-seated-shoulder-press.jpg',
-  'Chest Press Machine horizontal':'exercises/Lying-Chest-Press-Machine.gif',
-  'Chest Press Machine Incliné':'exercises/Lying-Chest-Press-Machine.gif',
-  'Planche Latérale (Side Plank)':'exercises/planche-laterale-exercice-abdos-obliques.jpg',
-  'Romanian Deadlift (RDL)':'exercises/romanian-deadlift.jpg',
-  'Soulevé de terre roumain':'exercises/romanian-deadlift.jpg',
-  'Rowing Machine':'exercises/rowing-assis-machine-hammer-strenght.gif',
-  'Extension Triceps Overhead Machine':'exercises/Seated-Dumbbell-Overhead-Tricep-Extension.gif'
-};
+// Préset images d'exercices (vide — l'utilisateur importe les siennes)
+const PRESET_IMG={};
 function imgFor(name){return S.exoImages[name]||PRESET_IMG[name]||null}
 
-// Recadrage carré au moment de l'upload
-function cropSquare(file){return new Promise(res=>{const r=new FileReader();r.onload=()=>{const img=new Image();img.onload=()=>{const s=Math.min(img.width,img.height);const c=document.createElement('canvas');c.width=512;c.height=512;const x=(img.width-s)/2,y=(img.height-s)/2;c.getContext('2d').drawImage(img,x,y,s,s,0,0,512,512);res(c.toDataURL('image/jpeg',.85))};img.src=r.result};r.readAsDataURL(file)})}
+// Recadrage interactif 3:4 (portrait) avec drag vertical et zoom
+function cropImage(file){return new Promise(res=>{
+  const r=new FileReader();
+  r.onload=()=>{
+    const img=new Image();
+    img.onload=()=>{
+      const m=document.getElementById('cropModal');
+      const wrap=document.getElementById('cropWrap');
+      const ph=document.getElementById('cropImg');
+      const zoom=document.getElementById('cropZoom');
+      ph.src=img.src;
+      let scale=1, oy=0;
+      const apply=()=>{
+        const wW=wrap.clientWidth, wH=wrap.clientHeight;
+        const ratio=img.width/img.height;
+        let dW=wW*scale, dH=dW/ratio;
+        if(dH<wH){dH=wH*scale;dW=dH*ratio}
+        ph.style.width=dW+'px';ph.style.height=dH+'px';
+        const minY=wH-dH, minX=wW-dW;
+        if(oy<minY)oy=minY;if(oy>0)oy=0;
+        const ox=(wW-dW)/2;
+        ph.style.left=ox+'px';ph.style.top=oy+'px';
+        ph._dW=dW;ph._dH=dH;ph._ox=ox;ph._oy=oy;ph._wW=wW;ph._wH=wH;
+      };
+      zoom.value=1;zoom.oninput=()=>{scale=+zoom.value;apply()};
+      let dragY=null;
+      const start=e=>{const t=e.touches?e.touches[0]:e;dragY=t.clientY-oy};
+      const move=e=>{if(dragY===null)return;e.preventDefault();const t=e.touches?e.touches[0]:e;oy=t.clientY-dragY;apply()};
+      const end=()=>{dragY=null};
+      wrap.ontouchstart=start;wrap.ontouchmove=move;wrap.ontouchend=end;
+      wrap.onmousedown=start;wrap.onmousemove=move;wrap.onmouseup=end;wrap.onmouseleave=end;
+      m.classList.add('on');setTimeout(apply,30);
+      document.getElementById('cropOk').onclick=()=>{
+        const wW=ph._wW,wH=ph._wH,dW=ph._dW,dH=ph._dH,ox=ph._ox,oyy=ph._oy;
+        const sx=(-ox)*(img.width/dW);
+        const sy=(-oyy)*(img.height/dH);
+        const sw=wW*(img.width/dW);
+        const sh=wH*(img.height/dH);
+        const c=document.createElement('canvas');c.width=600;c.height=800;
+        c.getContext('2d').drawImage(img,sx,sy,sw,sh,0,0,600,800);
+        m.classList.remove('on');
+        res(c.toDataURL('image/jpeg',.85));
+      };
+      document.getElementById('cropCancel').onclick=()=>{m.classList.remove('on');res(null)};
+    };
+    img.src=r.result;
+  };
+  r.readAsDataURL(file);
+})}
 
 // Recherche dernière performance d'un exo
 function lastPerf(exoName){
@@ -533,7 +564,7 @@ function renderSession(){
     const slot=document.createElement('label');slot.className='imgslot';
     const img=imgFor(e.n);slot.innerHTML=img?`<img src="${img}"/>`:'📷 Ajouter une photo (recadrage carré auto)';
     const inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.hidden=true;
-    inp.addEventListener('change',async ev=>{const f=ev.target.files[0];if(!f)return;const data=await cropSquare(f);S.exoImages[e.n]=data;save();renderSession()});
+    inp.addEventListener('change',async ev=>{const f=ev.target.files[0];if(!f)return;const data=await cropImage(f);if(data){S.exoImages[e.n]=data;save();renderSession()}});
     slot.appendChild(inp);d.appendChild(slot);
     e.sets.forEach((s,si)=>{const r=document.createElement('div');r.className='set-row'+(s.done?' done':'');
       const ph1=cardio?'mètres':'kg',ph2=cardio?'secondes':'reps';
@@ -680,7 +711,7 @@ $('chStart').addEventListener('click',()=>{
 $('chLap').addEventListener('click',()=>{S.chrono.laps.unshift(chNow());save();renderChrono()});
 $('chReset').addEventListener('click',()=>{S.chrono={running:false,start:0,acc:0,laps:[]};save();renderChrono()});
 
-applyTheme();go(S.activeSession?'seance':'home');updateLive();
+applyTheme();go('home');updateLive();
 window.addEventListener('beforeunload',save);
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 </script>
