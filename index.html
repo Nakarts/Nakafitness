@@ -55,10 +55,10 @@ input,select,textarea{background:var(--surface-2);color:var(--text);border:1px s
 .tab.active{color:var(--primary)}
 .tab svg{width:22px;height:22px;pointer-events:none}
 .tab span{pointer-events:none}
-.tab.center{flex:0 0 auto;margin-top:-30px}
-.tab.center .bubble{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;display:grid;place-items:center;box-shadow:0 8px 24px -6px var(--primary);border:4px solid var(--surface)}
-.tab.center .bubble svg{width:30px;height:30px}
-.tab.center span{margin-top:4px;color:var(--text)}
+.tab.center{flex:0 0 auto;margin-top:-14px}
+.tab.center .bubble{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;display:grid;place-items:center;box-shadow:0 4px 14px -4px var(--primary);border:3px solid var(--surface)}
+.tab.center .bubble svg{width:22px;height:22px}
+.tab.center span{margin-top:2px;color:var(--text)}
 .live-bar{position:fixed;left:10px;right:10px;bottom:88px;background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;border-radius:16px;padding:12px 14px;display:none;align-items:center;gap:8px;box-shadow:var(--shadow);z-index:51;max-width:740px;margin:0 auto}
 .live-bar.on{display:flex}
 .live-bar .t{font-variant-numeric:tabular-nums;font-weight:900;font-size:22px;letter-spacing:1px}
@@ -101,16 +101,12 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
 <body>
 <div class="app">
   <header class="top">
-    <div class="logo"><svg viewBox="0 0 64 64" fill="white"><path d="M20 22h6v8h12v-8h6v20h-6v-8H26v8h-6z"/><circle cx="14" cy="32" r="3"/><circle cx="50" cy="32" r="3"/></svg></div>
+    <div class="logo"><svg viewBox="0 0 64 64" fill="white"><path d="M18 50V14h8l16 24V14h6v36h-8L24 28v22z"/><circle cx="14" cy="50" r="2.5" opacity=".7"/><circle cx="50" cy="14" r="2.5" opacity=".7"/></svg></div>
     <div><div class="brand">NakaFitness <small>Train · Track · Progress</small></div></div>
     <div class="spacer"></div>
+    <button class="icon-btn" id="notifBtn" title="Activer notifications">🔔</button>
     <button class="icon-btn" id="themeBtn" title="Thème">◐</button>
     <button class="icon-btn" id="paletteBtn" title="Couleurs">◉</button>
-    <label class="avatar" title="Photo de profil">
-      <img id="avImg" alt="" style="display:none"/>
-      <span id="avPh">N</span>
-      <input type="file" accept="image/*" id="avFile" hidden/>
-    </label>
   </header>
 
   <section id="view-home">
@@ -130,7 +126,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
         <h3 class="title" style="margin:0">☀️ Routine réveil</h3>
         <button class="btn primary sm" id="startWakeBtn">▶ Démarrer</button>
       </div>
-      <div class="sub">🧘 Mobilité douce · ~8 min</div>
+      <div class="sub">Mobilité douce · ~8 min · enchaînement automatique</div>
     </div>
 
     <div class="card">
@@ -315,34 +311,34 @@ const TPL={
   ]}
 };
 const WAKE_BLOCKS=[
-  {b:'☀️ Bloc 1 — Activation douce (3 min)',ex:[
-    {n:'Respirations diaphragmatiques',d:'60s · Main sur ventre, inspire 4s expire 6s'},
-    {n:'Rotations de cheville',d:'30s · 10 cercles dans chaque sens'},
-    {n:'Genoux au ventre + rotation lombaire',d:'60s · Allongé, genoux qui basculent G/D lentement'},
-    {n:'Chat-Vache',d:'30s · À 4 pattes, dos rond puis creux'}
+  {b:'Bloc 1 — Activation douce (3 min)',ex:[
+    {n:'Respirations diaphragmatiques',d:'60s · Main sur ventre, inspire 4s expire 6s',sec:60},
+    {n:'Rotations de cheville',d:'30s · 10 cercles dans chaque sens',sec:30},
+    {n:'Genoux au ventre + rotation lombaire',d:'60s · Allongé, genoux qui basculent G/D lentement',sec:60},
+    {n:'Chat-Vache',d:'30s · À 4 pattes, dos rond puis creux',sec:30}
   ]},
-  {b:'🦴 Bloc 2 — Colonne & Hanches (4 min)',ex:[
-    {n:'Thread the needle',d:"60s · 4 pattes, un bras sous l'autre, rotation thoracique"},
-    {n:'Hip flexor stretch dynamique',d:'60s · Fente basse, bassin oscille avant/arrière'},
-    {n:'Pigeon dynamique',d:'60s · Entrée/sortie lente du pigeon'},
-    {n:"World's Greatest Stretch",d:'60s · Fente avant, coude au sol, rotation tronc'}
+  {b:'Bloc 2 — Colonne & Hanches (4 min)',ex:[
+    {n:'Thread the needle',d:"60s · 4 pattes, un bras sous l'autre, rotation thoracique",sec:60},
+    {n:'Hip flexor stretch dynamique',d:'60s · Fente basse, bassin oscille avant/arrière',sec:60},
+    {n:'Pigeon dynamique',d:'60s · Entrée/sortie lente du pigeon',sec:60},
+    {n:"World's Greatest Stretch",d:'60s · Fente avant, coude au sol, rotation tronc',sec:60}
   ]},
-  {b:'💪 Bloc 3 — Gainage Dynamique (4 min)',ex:[
-    {n:'Dead Bug',d:"60s · Bras et jambe opposés s'étirent en alternance"},
-    {n:'Bear Crawl Hold + Tap',d:'60s · 4 pattes genoux à 5 cm, taper épaule G/D'},
-    {n:'Planche dynamique',d:'60s · Planche → mains → coudes, alterné'},
-    {n:'Bird Dog',d:'60s · 4 pattes, bras et jambe opposés tendus, hold 2s'}
+  {b:'Bloc 3 — Gainage Dynamique (4 min)',ex:[
+    {n:'Dead Bug',d:"60s · Bras et jambe opposés s'étirent en alternance",sec:60},
+    {n:'Bear Crawl Hold + Tap',d:'60s · 4 pattes genoux à 5 cm, taper épaule G/D',sec:60},
+    {n:'Planche dynamique',d:'60s · Planche → mains → coudes, alterné',sec:60},
+    {n:'Bird Dog',d:'60s · 4 pattes, bras et jambe opposés tendus, hold 2s',sec:60}
   ]},
-  {b:'🤸 Bloc 4 — Épaules & Thorax debout (2 min)',ex:[
-    {n:'Bras en croix — cercles progressifs',d:'30s · Petits → grands cercles'},
-    {n:'Chest opener dynamique',d:'30s · Bras tendus derrière, ouverture poitrine'},
-    {n:'Rotation thoracique debout',d:'60s · Pieds écartés, bras croisés, torsions'}
+  {b:'Bloc 4 — Épaules & Thorax debout (2 min)',ex:[
+    {n:'Bras en croix — cercles progressifs',d:'30s · Petits → grands cercles',sec:30},
+    {n:'Chest opener dynamique',d:'30s · Bras tendus derrière, ouverture poitrine',sec:30},
+    {n:'Rotation thoracique debout',d:'60s · Pieds écartés, bras croisés, torsions',sec:60}
   ]},
-  {b:'🦵 Bloc 5 — Bas du corps debout (2 min)',ex:[
-    {n:'Hip circles',d:'30s · Mains sur hanches, cercles du bassin'},
-    {n:'Squat profond + ouverture',d:'30s · Descente lente, coudes poussent les genoux'},
-    {n:'Leg swings avant/arrière',d:'30s · Jambe qui balance librement'},
-    {n:'Leg swings latéraux',d:'30s · En croisant devant'}
+  {b:'Bloc 5 — Bas du corps debout (2 min)',ex:[
+    {n:'Hip circles',d:'30s · Mains sur hanches, cercles du bassin',sec:30},
+    {n:'Squat profond + ouverture',d:'30s · Descente lente, coudes poussent les genoux',sec:30},
+    {n:'Leg swings avant/arrière',d:'30s · Jambe qui balance librement',sec:30},
+    {n:'Leg swings latéraux',d:'30s · En croisant devant',sec:30}
   ]}
 ];
 const WAKE_FLAT=WAKE_BLOCKS.flatMap(b=>b.ex);
@@ -368,9 +364,61 @@ function renderPalettes(){[...$('paletteList').children].forEach(b=>b.classList.
 renderPalettes();
 document.querySelectorAll('[data-theme]').forEach(b=>b.addEventListener('click',()=>{S.theme=b.dataset.theme;applyTheme();save()}));
 
-$('avFile').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{S.avatar=r.result;save();renderAvatar()};r.readAsDataURL(f)});
-function renderAvatar(){if(S.avatar){$('avImg').src=S.avatar;$('avImg').style.display='block';$('avPh').style.display='none'}else{$('avImg').style.display='none';$('avPh').style.display='block'}}
-renderAvatar();
+// avatar removed
+// Notifications
+$('notifBtn').addEventListener('click',async()=>{
+  if(!('Notification' in window))return alert('Notifications non supportées');
+  const p=await Notification.requestPermission();
+  if(p==='granted'){alert('Notifications activées ✓ Le bip de fin de repos sonnera même hors du site (selon votre OS).');}
+  else alert('Notifications refusées. Activez-les dans les réglages du navigateur pour entendre le bip hors du site.');
+});
+// Wake Lock pour garder l'écran allumé pendant la séance
+let wakeLock=null;
+async function acquireWakeLock(){try{if('wakeLock' in navigator){wakeLock=await navigator.wakeLock.request('screen')}}catch(e){}}
+function releaseWakeLock(){try{wakeLock?.release();wakeLock=null}catch(e){}}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&S.activeSession&&!wakeLock)acquireWakeLock()});
+
+// Préset images d'exercices fournies
+const PRESET_IMG={
+  'Curl Haltères Marteau':'exercises/03131301-Dumbbell-Hammer-Curl_Forearm_720.gif',
+  'Curl marteau':'exercises/03131301-Dumbbell-Hammer-Curl_Forearm_720.gif',
+  'Tractions':'exercises/chin-up-traction-supination.gif',
+  'Traction Pronation':'exercises/chin-up-traction-supination.gif',
+  'Curl pupitre':'exercises/curl-pupitre-machine-prechargee.gif',
+  'Dips':'exercises/dips.jpg',
+  'Fentes Marchées':'exercises/fentes-marchees-avec-sandbag-cat.jpg',
+  'Hack Squat':'exercises/hack-squa.gif',
+  'Leg Curl Assis':'exercises/leg-curl-assis-machine.gif',
+  'Leg curl':'exercises/leg-curl-assis-machine.gif',
+  'Abduction hanches':'exercises/lever-seated-hip-abduction.jpg',
+  'Adductor Machine':'exercises/lever-seated-hip-abduction.jpg',
+  'Shoulder Press Machine':'exercises/lever-seated-shoulder-press.jpg',
+  'Développé militaire':'exercises/lever-seated-shoulder-press.jpg',
+  'Chest Press Machine horizontal':'exercises/Lying-Chest-Press-Machine.gif',
+  'Chest Press Machine Incliné':'exercises/Lying-Chest-Press-Machine.gif',
+  'Planche Latérale (Side Plank)':'exercises/planche-laterale-exercice-abdos-obliques.jpg',
+  'Romanian Deadlift (RDL)':'exercises/romanian-deadlift.jpg',
+  'Soulevé de terre roumain':'exercises/romanian-deadlift.jpg',
+  'Rowing Machine':'exercises/rowing-assis-machine-hammer-strenght.gif',
+  'Extension Triceps Overhead Machine':'exercises/Seated-Dumbbell-Overhead-Tricep-Extension.gif'
+};
+function imgFor(name){return S.exoImages[name]||PRESET_IMG[name]||null}
+
+// Recadrage carré au moment de l'upload
+function cropSquare(file){return new Promise(res=>{const r=new FileReader();r.onload=()=>{const img=new Image();img.onload=()=>{const s=Math.min(img.width,img.height);const c=document.createElement('canvas');c.width=512;c.height=512;const x=(img.width-s)/2,y=(img.height-s)/2;c.getContext('2d').drawImage(img,x,y,s,s,0,0,512,512);res(c.toDataURL('image/jpeg',.85))};img.src=r.result};r.readAsDataURL(file)})}
+
+// Recherche dernière performance d'un exo
+function lastPerf(exoName){
+  for(let i=S.history.length-1;i>=0;i--){const h=S.history[i];const e=h.exos?.find(x=>x.n===exoName);
+    if(e){const last=e.sets.find(s=>s.kg||s.reps);if(last)return{kg:last.kg,reps:last.reps}}}
+  return null;
+}
+// Suggestion progressive: +2.5kg si dernière perf complète
+function suggest(exoName,target){
+  const p=lastPerf(exoName);if(!p)return{kg:'',reps:target||''};
+  const k=parseFloat(p.kg);const r=parseInt(p.reps);
+  return{kg:isNaN(k)?'':(k+2.5).toString(),reps:isNaN(r)?(target||''):r.toString()};
+}
 
 const VIEWS=['home','seance','chrono','bilan','mob'];
 function go(v){
@@ -405,7 +453,7 @@ function renderMob(){
 }
 
 [$('startWakeBtn'),$('startWakeBtn2')].forEach(b=>b&&b.addEventListener('click',()=>{
-  startSession({n:'☀️ Routine réveil',d:'Mobilité',cls:'sess-reco',ex:WAKE_FLAT.map(w=>({n:w.n,sets:1,reps:w.d}))});
+  startSession({n:'☀️ Routine réveil',d:'Mobilité',cls:'sess-reco',mode:'auto',ex:WAKE_FLAT.map(w=>({n:w.n,d:w.d,sec:w.sec||30}))});
 }));
 $('freeStartBtn').addEventListener('click',()=>startSession({n:'Séance libre',d:'',cls:'sess-reco',ex:[]}));
 document.querySelectorAll('[data-cardio]').forEach(b=>b.addEventListener('click',()=>{
@@ -413,47 +461,114 @@ document.querySelectorAll('[data-cardio]').forEach(b=>b.addEventListener('click'
 }));
 
 function startSession(tpl){
-  S.activeSession={name:tpl.n,startedAt:Date.now(),exos:tpl.ex.map(e=>({n:e.n,sets:Array.from({length:e.sets||3},()=>({reps:'',kg:'',done:false})),target:e.reps||''}))};
-  save();go('seance');
+  if(tpl.mode==='auto'){
+    S.activeSession={name:tpl.n,startedAt:Date.now(),mode:'auto',idx:0,paused:true,steps:tpl.ex.map(e=>({n:e.n,d:e.d,sec:e.sec})),exos:[]};
+  } else {
+    S.activeSession={name:tpl.n,startedAt:Date.now(),exos:tpl.ex.map(e=>({n:e.n,sets:Array.from({length:e.sets||3},()=>({reps:'',kg:'',done:false})),target:e.reps||''}))};
+  }
+  acquireWakeLock();save();go('seance');
 }
 
-let sessTick;
+let sessTick,autoTick;
 function renderSession(){
-  if(!S.activeSession){$('sessTitle').textContent='Aucune séance';$('sessTime').textContent='';$('exoList').innerHTML='<div class="sub">Lance une séance depuis l\'accueil.</div>';clearInterval(sessTick);return}
+  if(!S.activeSession){$('sessTitle').textContent='Aucune séance';$('sessTime').textContent='';$('exoList').innerHTML='<div class="sub">Lance une séance depuis l\'accueil.</div>';clearInterval(sessTick);clearInterval(autoTick);return}
   $('sessTitle').textContent=S.activeSession.name;
   const tick=()=>{const s=Math.floor((Date.now()-S.activeSession.startedAt)/1000);$('sessTime').textContent=fmtTime(s)};
   tick();clearInterval(sessTick);sessTick=setInterval(tick,1000);
   const el=$('exoList');el.innerHTML='';
+  // ===== MODE AUTO (mobilité) =====
+  if(S.activeSession.mode==='auto'){
+    const A=S.activeSession;const cur=A.steps[A.idx];
+    if(!cur){el.innerHTML='<div class="sub">Routine terminée 🎉</div>';return}
+    const card=document.createElement('div');card.className='exo';
+    const img=imgFor(cur.n);
+    card.innerHTML=`
+      <h4 style="font-size:18px">${cur.n}</h4>
+      <div class="sub">${cur.d}</div>
+      ${img?`<img src="${img}" style="width:100%;max-height:200px;object-fit:contain;border-radius:10px;margin-top:8px"/>`:''}
+      <div class="chrono-disp" id="autoT" style="font-size:42px;margin:10px 0">${cur.sec}s</div>
+      <div class="row" style="justify-content:center">
+        <button class="btn ghost" id="autoPrev">◀ Précédent</button>
+        <button class="btn primary" id="autoPP">${A.paused?'▶ Démarrer':'⏸ Pause'}</button>
+        <button class="btn ghost" id="autoNext">Suivant ▶</button>
+      </div>
+      <div class="row" style="justify-content:center;margin-top:8px">
+        <button class="btn danger sm" id="autoStop">■ Arrêter la séance</button>
+      </div>
+      <div class="sub" style="text-align:center;margin-top:6px">${A.idx+1} / ${A.steps.length}</div>`;
+    el.appendChild(card);
+    let left=A.remaining??cur.sec;
+    const dt=$('autoT');
+    clearInterval(autoTick);
+    if(!A.paused){
+      A._tickStart=Date.now();
+      autoTick=setInterval(()=>{
+        const elapsed=Math.floor((Date.now()-A._tickStart)/1000);
+        const rem=Math.max(0,(A.remaining??cur.sec)-elapsed);
+        dt.textContent=rem+'s';
+        if(rem<=0){clearInterval(autoTick);beep();if('vibrate' in navigator)navigator.vibrate(150);
+          A.idx++;A.remaining=null;A.paused=false;save();
+          if(A.idx>=A.steps.length){A.paused=true;A.remaining=null}
+          renderSession();
+        }
+      },250);
+    } else dt.textContent=(A.remaining??cur.sec)+'s';
+    $('autoPP').onclick=()=>{
+      if(A.paused){A.paused=false;A.remaining=A.remaining??cur.sec;save();renderSession()}
+      else{const elapsed=Math.floor((Date.now()-A._tickStart)/1000);A.remaining=Math.max(0,(A.remaining??cur.sec)-elapsed);A.paused=true;save();renderSession()}
+    };
+    $('autoPrev').onclick=()=>{if(A.idx>0){A.idx--;A.remaining=null;A.paused=true;save();renderSession()}};
+    $('autoNext').onclick=()=>{A.idx++;A.remaining=null;A.paused=true;save();if(A.idx>=A.steps.length){A.idx=A.steps.length-1}renderSession()};
+    $('autoStop').onclick=()=>{if(confirm('Arrêter la séance ?')){releaseWakeLock();S.activeSession=null;save();go('home')}};
+    return;
+  }
+  // ===== MODE CLASSIQUE =====
+  let totalVol=0;
   S.activeSession.exos.forEach((e,ei)=>{const cardio=isCardio(e.n);
     const d=document.createElement('div');d.className='exo';
-    d.innerHTML=`<div class="row" style="justify-content:space-between"><h4>${e.n}</h4><div><span class="tag">${e.target||''}</span><button class="btn sm ghost rm">✕</button></div></div>`;
-    // image slot
+    const prev=lastPerf(e.n);
+    const sug=suggest(e.n,e.target);
+    const prevTxt=prev?`<span class="tag">Préc: ${prev.kg||'—'}${cardio?'m':'kg'} × ${prev.reps||'—'}</span>`:'';
+    d.innerHTML=`<div class="row" style="justify-content:space-between"><h4>${e.n}</h4><div>${prevTxt}<span class="tag">${e.target||''}</span><button class="btn sm ghost rm">✕</button></div></div>`;
     const slot=document.createElement('label');slot.className='imgslot';
-    const img=S.exoImages[e.n];slot.innerHTML=img?`<img src="${img}"/>`:'📷 Ajouter une photo';
+    const img=imgFor(e.n);slot.innerHTML=img?`<img src="${img}"/>`:'📷 Ajouter une photo (recadrage carré auto)';
     const inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.hidden=true;
-    inp.addEventListener('change',ev=>{const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{S.exoImages[e.n]=r.result;save();renderSession()};r.readAsDataURL(f)});
+    inp.addEventListener('change',async ev=>{const f=ev.target.files[0];if(!f)return;const data=await cropSquare(f);S.exoImages[e.n]=data;save();renderSession()});
     slot.appendChild(inp);d.appendChild(slot);
     e.sets.forEach((s,si)=>{const r=document.createElement('div');r.className='set-row'+(s.done?' done':'');
-      const ph1=cardio?'distance':'kg',ph2=cardio?'temps':'reps';
-      const im1=cardio?'text':'decimal',im2=cardio?'text':'numeric';
-      r.innerHTML=`<span>${si+1}</span><input type="${cardio?'text':'number'}" inputmode="${im1}" placeholder="${ph1}" value="${s.kg}"><input type="${cardio?'text':'number'}" inputmode="${im2}" placeholder="${ph2}" value="${s.reps}"><button class="ok-btn">✓</button>`;
+      const ph1=cardio?'mètres':'kg',ph2=cardio?'secondes':'reps';
+      const phk=sug.kg?` placeholder="${cardio?'(préc '+(prev?.kg||'')+'m)':'(suggéré '+sug.kg+'kg)'}"`:` placeholder="${ph1}"`;
+      const phr=sug.reps?` placeholder="${cardio?'(préc '+(prev?.reps||'')+'s)':'(suggéré '+sug.reps+')'}"`:` placeholder="${ph2}"`;
+      r.innerHTML=`<span>${si+1}</span><input type="number" inputmode="numeric" value="${s.kg}"${phk}><input type="number" inputmode="numeric" value="${s.reps}"${phr}><button class="ok-btn">✓</button>`;
       const[ki,ri,ok]=r.querySelectorAll('input,button');
-      ki.addEventListener('input',()=>{s.kg=ki.value;save()});
-      ri.addEventListener('input',()=>{s.reps=ri.value;save()});
-      ok.addEventListener('click',()=>{s.done=!s.done;save();r.classList.toggle('done',s.done);if(s.done){if('vibrate' in navigator)navigator.vibrate(30);startRest(90)}});
-      d.appendChild(r)});
+      ki.addEventListener('input',()=>{s.kg=ki.value;save();updTotal()});
+      ri.addEventListener('input',()=>{s.reps=ri.value;save();updTotal()});
+      ok.addEventListener('click',()=>{s.done=!s.done;
+        if(s.done&&!s.kg&&sug.kg)s.kg=sug.kg;
+        if(s.done&&!s.reps&&sug.reps)s.reps=sug.reps;
+        if(s.done){ki.value=s.kg;ri.value=s.reps}
+        save();r.classList.toggle('done',s.done);
+        if(s.done){if('vibrate' in navigator)navigator.vibrate(30);startRest(90);updTotal()}
+      });
+      d.appendChild(r);
+      if(!cardio)totalVol+=(+s.kg||0)*(+s.reps||0);
+    });
     const add=document.createElement('button');add.className='btn sm ghost';add.style.marginTop='8px';add.textContent='＋ Série';
     add.addEventListener('click',()=>{e.sets.push({reps:'',kg:'',done:false});save();renderSession()});d.appendChild(add);
     d.querySelector('.rm').addEventListener('click',()=>{S.activeSession.exos.splice(ei,1);save();renderSession()});
     el.appendChild(d)});
+  // Volume total
+  const vt=document.createElement('div');vt.className='kpi';vt.style.marginTop='10px';
+  vt.innerHTML=`<b id="totVol">${Math.round(totalVol)}</b><span>Volume total kg</span>`;el.appendChild(vt);
+  function updTotal(){let v=0;S.activeSession.exos.forEach(e=>{if(!isCardio(e.n))e.sets.forEach(s=>v+=(+s.kg||0)*(+s.reps||0))});const t=$('totVol');if(t)t.textContent=Math.round(v)}
 }
 $('sessAddExo').addEventListener('click',()=>{if(!S.activeSession)return;openPickExo(n=>{S.activeSession.exos.push({n,sets:[{reps:'',kg:'',done:false},{reps:'',kg:'',done:false},{reps:'',kg:'',done:false}],target:''});save();renderSession()})});
 $('sessFinish').addEventListener('click',()=>{
   if(!S.activeSession)return;
   const dur=Math.floor((Date.now()-S.activeSession.startedAt)/1000);
-  const vol=S.activeSession.exos.reduce((t,e)=>t+e.sets.reduce((u,s)=>u+(+s.kg||0)*(+s.reps||0),0),0);
-  S.history.push({date:Date.now(),name:S.activeSession.name,duration:dur,volume:vol,exos:S.activeSession.exos});
-  S.activeSession=null;save();go('home');
+  const vol=(S.activeSession.exos||[]).reduce((t,e)=>t+e.sets.reduce((u,s)=>u+(+s.kg||0)*(+s.reps||0),0),0);
+  S.history.push({date:Date.now(),name:S.activeSession.name,duration:dur,volume:vol,exos:S.activeSession.exos||[]});
+  releaseWakeLock();S.activeSession=null;save();go('home');
 });
 
 document.querySelectorAll('[data-rest]').forEach(b=>b.addEventListener('click',()=>startRest(+b.dataset.rest)));
