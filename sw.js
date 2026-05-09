@@ -1,4 +1,4 @@
-const C='thia-naka-v8';
+const C='thia-naka-v9';
 const A=['./','./thiathie_stocks.html','./nakafitness.html','./manifest.json'];
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(C).then(c=>c.addAll(A).catch(()=>{})))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
@@ -12,7 +12,7 @@ self.addEventListener('message',e=>{
     if(timerId)clearTimeout(timerId);
     const ms=Math.max(0,e.data.endAt-Date.now());
     timerId=setTimeout(()=>{
-      self.registration.showNotification('⏱️ Repos terminé',{body:'Prochaine série !',vibrate:[300,150,300,150,300],tag:'rest',renotify:true,silent:false});
+      self.registration.showNotification('⏱️ Repos terminé',{body:'Prochaine série !',vibrate:[300,150,300,150,300],tag:'rest',renotify:true,silent:false,requireInteraction:true});
     },ms);
   }
   if(e.data?.type==='TIMER_CANCEL'){if(timerId)clearTimeout(timerId);timerId=null}
