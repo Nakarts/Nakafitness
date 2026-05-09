@@ -1,4 +1,4 @@
-const C='thia-naka-v10';
+const C='thia-naka-v12';
 const A=['./','./thiathie_stocks.html','./nakafitness.html','./manifest.json'];
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(C).then(c=>c.addAll(A).catch(()=>{})))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
