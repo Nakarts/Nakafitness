@@ -296,6 +296,15 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
   <button class="btn ghost" style="width:100%" id="pickCreate">＋ Créer un exercice personnalisé</button>
 </div></div>
 
+<div class="modal" id="histModal"><div class="sheet" style="max-height:85vh;overflow:auto">
+  <h3 class="title" id="histModalTitle">Ajouter une séance</h3>
+  <div id="histModalBody"></div>
+  <div class="row" style="justify-content:space-between;margin-top:12px">
+    <button class="btn ghost" id="histModalCancel">Annuler</button>
+    <button class="btn primary" id="histModalSave">Enregistrer</button>
+  </div>
+</div></div>
+
 <script>
 const K='naka.v8';
 const CAT=['Pectoraux','Dos','Épaules','Biceps','Triceps','Jambes','Fessiers','Abdos','Mobilité','Cardio'];
@@ -651,7 +660,7 @@ function renderSession(){
     const img=imgFor(e.n);
     const total=e.sets.length;
     const doneCount=e.sets.filter(s=>s.done).length;
-    const u1=cardio?'m':'kg', u2=cardio?'s':'reps';
+    const u1=cardio?'min':'kg', u2=cardio?'km':'reps';
     const slotId='img_'+ei;
     d.innerHTML=`
       <label class="exo-imgL" for="${slotId}">${img?`<img src="${img}"/>`:'📷<br>Photo'}</label>
@@ -817,22 +826,100 @@ function showHistDay(k,evs){const d=new Date(k);
   evs.forEach(h=>{const idx=S.history.indexOf(h);const r=document.createElement('div');r.className='exo';
     r.innerHTML=`<div class="row" style="justify-content:space-between"><div><h4 style="margin:0">${h.name}</h4><div class="sub">${Math.round((h.duration||0)/60)} min · ${Math.round(h.volume||0)} kg vol</div></div><div class="row"><button class="btn sm ghost hEdit">✏️</button><button class="btn sm danger hDel">🗑</button></div></div>`;
     r.querySelector('.hDel').onclick=()=>{if(confirm('Supprimer cette séance ?')){S.history.splice(idx,1);save();renderHist()}};
-    r.querySelector('.hEdit').onclick=()=>{
-      const nn=prompt('Nom de la séance ?',h.name);if(nn===null)return;
-      const dur=prompt('Durée (minutes) ?',Math.round((h.duration||0)/60));if(dur===null)return;
-      const vol=prompt('Volume total (kg) ?',Math.round(h.volume||0));if(vol===null)return;
-      h.name=nn;h.duration=(+dur||0)*60;h.volume=+vol||0;save();renderHist();
-    };
+    r.querySelector('.hEdit').onclick=()=>openHistEditor(k,idx);
     list.appendChild(r);
   });
   wrap.appendChild(list);
-  $('hAddBtn').onclick=()=>{
-    const nn=prompt('Nom (ex: Pull A, Cardio Course, Routine réveil) ?');if(!nn)return;
-    const dur=parseInt(prompt('Durée (minutes) ?','45'))||0;
-    const vol=parseInt(prompt('Volume (kg) ?','0'))||0;
-    const dateStamp=new Date(k);dateStamp.setHours(12);
-    S.history.push({date:dateStamp.getTime(),name:nn,duration:dur*60,volume:vol,exos:[]});
-    save();renderHist();
+  $('hAddBtn').onclick=()=>openHistEditor(k,null);
+}
+
+// === History editor (modal) — pick template, fill data, save ===
+function openHistEditor(dayKey,editIdx){
+  const m=$('histModal');const body=$('histModalBody');const title=$('histModalTitle');
+  const dayDate=new Date(dayKey);dayDate.setHours(12,0,0,0);
+  let session=null; // {name,duration,exos:[{n,sets:[{kg,reps}]}]}
+  if(editIdx!=null){
+    const h=S.history[editIdx];
+    session={name:h.name,duration:Math.round((h.duration||0)/60),exos:JSON.parse(JSON.stringify(h.exos||[]))};
+    title.textContent='Modifier la séance';
+    renderForm();
+  } else {
+    title.textContent='Ajouter une séance';
+    renderPicker();
+  }
+  m.classList.add('on');
+  $('histModalCancel').onclick=()=>m.classList.remove('on');
+  function renderPicker(){
+    body.innerHTML='<div class="sub" style="margin-bottom:8px">Choisis une séance :</div>';
+    const grid=document.createElement('div');grid.className='row';grid.style.flexWrap='wrap';grid.style.gap='8px';
+    Object.values(S.tpl||TPL).forEach(t=>{
+      const b=document.createElement('button');b.className='btn';b.textContent=t.n;
+      b.onclick=()=>{session={name:t.n,duration:45,exos:t.ex.map(e=>({n:e.n,sets:Array.from({length:e.sets||3},()=>({kg:'',reps:''}))}))};renderForm()};
+      grid.appendChild(b);
+    });
+    ['Course','Vélo','Marche','Rameur','Corde','HIIT'].forEach(c=>{
+      const b=document.createElement('button');b.className='btn';b.textContent='Cardio · '+c;
+      b.onclick=()=>{session={name:'Cardio · '+c,duration:30,exos:[{n:c,sets:[{kg:'',reps:''}]}]};renderForm()};
+      grid.appendChild(b);
+    });
+    const lib=document.createElement('button');lib.className='btn ghost';lib.textContent='Séance libre';
+    lib.onclick=()=>{session={name:'Séance libre',duration:30,exos:[]};renderForm()};
+    grid.appendChild(lib);
+    body.appendChild(grid);
+  }
+  function renderForm(){
+    body.innerHTML='';
+    const head=document.createElement('div');
+    head.innerHTML=`<div class="sub">${dayDate.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div>
+      <input id="hmName" value="${session.name.replace(/"/g,'&quot;')}" style="width:100%;margin-top:6px"/>
+      <div class="row" style="margin-top:6px;align-items:center;gap:6px"><span class="sub">Durée (min)</span><input id="hmDur" type="number" inputmode="numeric" value="${session.duration||0}" style="width:90px"/></div>`;
+    body.appendChild(head);
+    const exoWrap=document.createElement('div');exoWrap.style.marginTop='10px';body.appendChild(exoWrap);
+    function paintExos(){
+      exoWrap.innerHTML='';
+      session.exos.forEach((e,ei)=>{
+        const cardio=isCardio(e.n);
+        const u1=cardio?'min':'kg',u2=cardio?'km':'reps';
+        const card=document.createElement('div');card.className='exo';card.style.marginTop='8px';
+        card.innerHTML=`<div class="row" style="justify-content:space-between"><b>${e.n}</b><button class="btn sm danger exDel">🗑</button></div>
+          <div class="set-head" style="display:grid;grid-template-columns:1fr 1fr 40px;gap:6px;margin-top:6px"><span class="sub">${u1}</span><span class="sub">${u2}</span><span></span></div>
+          <div class="setsW"></div>
+          <button class="btn sm ghost addSet" style="margin-top:6px">＋ Série</button>`;
+        const sw=card.querySelector('.setsW');
+        function paintSets(){
+          sw.innerHTML='';
+          e.sets.forEach((s,si)=>{
+            const row=document.createElement('div');row.style.cssText='display:grid;grid-template-columns:1fr 1fr 40px;gap:6px;margin-top:4px';
+            row.innerHTML=`<input type="number" inputmode="decimal" value="${s.kg||''}" placeholder="${u1}"><input type="number" inputmode="decimal" value="${s.reps||''}" placeholder="${u2}"><button class="btn sm ghost">✕</button>`;
+            const[ki,ri,del]=row.querySelectorAll('input,button');
+            ki.oninput=()=>s.kg=ki.value;ri.oninput=()=>s.reps=ri.value;
+            del.onclick=()=>{e.sets.splice(si,1);paintSets()};
+            sw.appendChild(row);
+          });
+        }
+        paintSets();
+        card.querySelector('.addSet').onclick=()=>{e.sets.push({kg:'',reps:''});paintSets()};
+        card.querySelector('.exDel').onclick=()=>{session.exos.splice(ei,1);paintExos()};
+        exoWrap.appendChild(card);
+      });
+      const addEx=document.createElement('button');addEx.className='btn ghost';addEx.style.cssText='width:100%;margin-top:8px';addEx.textContent='＋ Ajouter un exercice';
+      addEx.onclick=()=>openPickExo(n=>{session.exos.push({n,sets:[{kg:'',reps:''},{kg:'',reps:''},{kg:'',reps:''}]});paintExos()});
+      exoWrap.appendChild(addEx);
+    }
+    paintExos();
+  }
+  $('histModalSave').onclick=()=>{
+    if(!session){m.classList.remove('on');return}
+    const name=($('hmName')?.value||session.name).trim()||'Séance';
+    const dur=(parseInt($('hmDur')?.value)||0)*60;
+    const vol=session.exos.reduce((t,e)=>isCardio(e.n)?t:t+e.sets.reduce((u,s)=>u+(+s.kg||0)*(+s.reps||0),0),0);
+    const exosClean=session.exos.map(e=>({n:e.n,sets:e.sets.map(s=>({kg:s.kg||'',reps:s.reps||'',done:true}))}));
+    if(editIdx!=null){
+      Object.assign(S.history[editIdx],{name,duration:dur,volume:vol,exos:exosClean});
+    } else {
+      S.history.push({date:dayDate.getTime(),name,duration:dur,volume:vol,exos:exosClean});
+    }
+    save();m.classList.remove('on');renderHist();
   };
 }
 
