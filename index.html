@@ -570,8 +570,6 @@ function renderGExos(){
     r.appendChild(edit);r.appendChild(del);list.appendChild(r)});
   if(!S.customExo.length)list.innerHTML='<div class="sub">Aucun exo perso. Le catalogue de base contient déjà '+EXO.length+' exercices.</div>';
 }
-  if(!S.customExo.length)list.innerHTML='<div class="sub">Aucun exo perso. Le catalogue de base contient déjà '+EXO.length+' exercices.</div>';
-}
 $('gAddExo').onclick=()=>{const n=prompt("Nom de l'exercice ?");if(!n)return;const c=prompt('Catégorie ('+CAT.join(', ')+') ?')||'Mobilité';S.customExo.push({n,c});save();renderGExos()};
 
 $('startWakeBtn').addEventListener('click',()=>{
