@@ -1,20 +1,863 @@
-const C='thia-naka-v13';
-const A=['./','./thiathie_stocks.html','./nakafitness.html','./manifest.json'];
-self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(C).then(c=>c.addAll(A).catch(()=>{})))});
-self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
-self.addEventListener('fetch',e=>{
-  if(e.request.method!=='GET')return;
-  e.respondWith(fetch(e.request).then(r=>{const cp=r.clone();caches.open(C).then(c=>c.put(e.request,cp).catch(()=>{}));return r}).catch(()=>caches.match(e.request)));
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="theme-color" content="#0b0f1a"/>
+<title>NakaFitness</title>
+<link rel="manifest" href="manifest.json"/>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' x2='1' y1='0' y2='1'%3E%3Cstop offset='0' stop-color='%23ef4444'/%3E%3Cstop offset='1' stop-color='%23f97316'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23g)'/%3E%3Cg opacity='.3' fill='white'%3E%3Crect x='4' y='29' width='5' height='8' rx='1.5'/%3E%3Crect x='55' y='29' width='5' height='8' rx='1.5'/%3E%3Crect x='9' y='31' width='3' height='4'/%3E%3Crect x='52' y='31' width='3' height='4'/%3E%3Crect x='12' y='32' width='40' height='2' rx='1'/%3E%3C/g%3E%3Ctext x='32' y='46' text-anchor='middle' font-size='38' font-weight='900' font-family='Arial,sans-serif' fill='white'%3EN%3C/text%3E%3C/svg%3E"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{--bg:#f6f7fb;--surface:#fff;--surface-2:#f0f2f8;--text:#0e1220;--muted:#5b6478;--border:#e3e6f0;--primary:#ef4444;--primary-2:#f97316;--accent:#22d3ee;--ok:#16c784;--warn:#f59e0b;--danger:#ef4444;--shadow:0 10px 30px -12px rgba(20,25,50,.18);--radius:18px}
+[data-theme="dark"]{--bg:#0b0f1a;--surface:#121829;--surface-2:#1a2138;--text:#eef1ff;--muted:#9aa3bd;--border:#26304a;--shadow:0 10px 40px -10px rgba(0,0,0,.6)}
+[data-palette="ocean"]{--primary:#2563eb;--primary-2:#06b6d4;--accent:#22d3ee}
+[data-palette="forest"]{--primary:#16a34a;--primary-2:#65a30d;--accent:#84cc16}
+[data-palette="sunset"]{--primary:#f43f5e;--primary-2:#f97316;--accent:#fbbf24}
+[data-palette="grape"]{--primary:#7c3aed;--primary-2:#a855f7;--accent:#ec4899}
+[data-palette="fire"]{--primary:#ef4444;--primary-2:#f59e0b;--accent:#facc15}
+[data-palette="mint"]{--primary:#10b981;--primary-2:#06b6d4;--accent:#34d399}
+[data-palette="rose"]{--primary:#e11d48;--primary-2:#db2777;--accent:#fb7185}
+[data-palette="midnight"]{--primary:#6366f1;--primary-2:#8b5cf6;--accent:#22d3ee}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Inter,sans-serif}
+body{padding-bottom:170px;padding-top:env(safe-area-inset-top)}
+.app{max-width:760px;margin:0 auto;padding:14px}
+header.top{display:flex;align-items:center;gap:10px;padding:6px 4px 14px}
+.logo{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,var(--primary),var(--primary-2));display:grid;place-items:center;color:#fff;box-shadow:var(--shadow)}
+.logo svg{width:32px;height:32px}
+.brand{font-weight:900;font-size:20px}
+.brand small{display:block;font-weight:500;color:var(--muted);font-size:10px;letter-spacing:.16em;text-transform:uppercase;margin-top:2px}
+.spacer{flex:1}
+.avatar{width:40px;height:40px;border-radius:12px;background:var(--surface);border:1px solid var(--border);overflow:hidden;display:grid;place-items:center;cursor:pointer;color:var(--primary);font-weight:900;font-size:18px}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.icon-btn{width:40px;height:40px;border-radius:12px;background:var(--surface);border:1px solid var(--border);display:grid;place-items:center;cursor:pointer;color:var(--text);font-size:22px;line-height:1}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin-bottom:14px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.title{font-size:18px;font-weight:800;margin:0 0 8px}
+.sub{color:var(--muted);font-size:13px}
+.chip{padding:8px 12px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border);cursor:pointer;font-size:13px;font-weight:600;color:var(--text)}
+.chip.active{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;border-color:transparent}
+.btn{padding:11px 16px;border-radius:12px;border:none;font-weight:700;cursor:pointer;background:var(--surface-2);color:var(--text)}
+.btn.primary{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;box-shadow:0 6px 16px -6px var(--primary)}
+.btn.danger{background:var(--danger);color:#fff}
+.btn.ghost{background:transparent;border:1px solid var(--border)}
+.btn.sm{padding:6px 10px;font-size:12px;border-radius:9px}
+input,select,textarea{background:var(--surface-2);color:var(--text);border:1px solid var(--border);padding:10px 12px;border-radius:11px;font-size:14px;width:100%;font-family:inherit}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.kpi{background:linear-gradient(135deg,var(--surface),var(--surface-2));border-radius:14px;padding:12px;border:1px solid var(--border);text-align:center}
+.kpi b{display:block;font-size:22px;font-weight:900;background:linear-gradient(135deg,var(--primary),var(--primary-2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.kpi span{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.1em;display:block;margin-top:2px}
+.tabs{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;justify-content:space-around;align-items:flex-end;padding:6px env(safe-area-inset-right) calc(8px + env(safe-area-inset-bottom)) env(safe-area-inset-left);z-index:50}
+.tab{flex:1;background:none;border:none;color:var(--muted);font-size:11px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px;cursor:pointer;font-family:inherit}
+.tab.active{color:var(--primary)}
+.tab svg{width:22px;height:22px;pointer-events:none}
+.tab span{pointer-events:none}
+.tab.center{flex:0 0 auto}
+.tab.center .bubble{width:32px;height:32px;border-radius:50%;background:var(--surface-2);color:var(--muted);display:grid;place-items:center;border:1px solid var(--border)}
+.tab.center.active .bubble{color:var(--primary);border-color:var(--primary)}
+.tab.center .bubble svg{width:18px;height:18px}
+.tab.center span{margin-top:2px}
+.exo-grid{display:grid;grid-template-columns:96px 1fr;gap:10px;align-items:stretch}
+.exo-imgL{width:96px;min-height:140px;border-radius:10px;background:var(--surface);border:1px dashed var(--border);display:grid;place-items:center;color:var(--muted);font-size:11px;text-align:center;cursor:pointer;overflow:hidden}
+.exo-imgL img{width:100%;height:100%;object-fit:cover}
+.exo-info{display:flex;flex-direction:column;gap:4px;min-width:0}
+.exo-info h4{margin:0;font-size:15px;line-height:1.2}
+.exo-meta{display:flex;gap:10px;align-items:center;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.exo-meta .prog{margin-left:auto;color:var(--primary);font-weight:800;font-size:13px}
+.set-grid{display:grid;grid-template-columns:38px 1fr 38px 1fr 36px;gap:5px;align-items:center;margin-top:4px}
+.set-grid .prev{font-size:11px;color:var(--muted);text-align:center;font-weight:600}
+.set-grid input{padding:6px 7px;font-size:13px;text-align:center}
+.set-grid .ok-btn{width:36px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface);font-weight:900;cursor:pointer;color:var(--text);transition:all .25s;padding:0}
+.set-grid.done .ok-btn{background:linear-gradient(135deg,var(--ok),#0e9f6e);color:#fff;border-color:transparent;animation:pop .35s ease}
+.set-head{display:grid;grid-template-columns:38px 1fr 38px 1fr 36px;gap:5px;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;text-align:center;font-weight:700;margin-top:6px}
+.live-bar{position:fixed;left:10px;right:10px;bottom:88px;background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;border-radius:16px;padding:12px 14px;display:none;align-items:center;gap:8px;box-shadow:var(--shadow);z-index:51;max-width:740px;margin:0 auto}
+.live-bar.on{display:flex}
+.live-bar .t{font-variant-numeric:tabular-nums;font-weight:900;font-size:22px;letter-spacing:1px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:flex-end;z-index:100}
+.modal.on{display:flex}
+.sheet{background:var(--surface);width:100%;max-width:760px;margin:0 auto;border-radius:24px 24px 0 0;padding:18px;max-height:90vh;overflow:auto}
+.exo{background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:12px;margin-bottom:10px}
+.exo{position:relative;overflow:hidden}
+.exo h4{margin:0 0 6px;font-size:15px}
+.exo .imgslot{width:78px;height:78px;border-radius:10px;background:var(--surface);border:1px dashed var(--border);display:grid;place-items:center;color:var(--muted);font-size:10px;text-align:center;cursor:pointer;overflow:hidden;float:right;margin:0 0 6px 10px;flex-shrink:0}
+.crop-wrap{position:relative;width:100%;aspect-ratio:1;background:#000;border-radius:12px;overflow:hidden;touch-action:none}
+.crop-wrap img{position:absolute;left:0;top:0;width:100%;height:auto;user-select:none;-webkit-user-drag:none}
+.exo .imgslot img{width:100%;height:100%;object-fit:cover}
+.set-row{display:grid;grid-template-columns:30px 1fr 1fr 44px;gap:8px;align-items:center;margin-top:6px}
+.set-row input{padding:7px 9px;font-size:13px}
+.set-row .ok-btn{width:44px;height:36px;border-radius:9px;border:1px solid var(--border);background:var(--surface);font-weight:900;cursor:pointer;color:var(--text);transition:all .25s}
+.set-row.done .ok-btn{background:linear-gradient(135deg,var(--ok),#0e9f6e);color:#fff;border-color:transparent;animation:pop .35s ease}
+@keyframes pop{0%{transform:scale(.85)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:8px}
+.cal .d{position:relative;aspect-ratio:1;display:grid;place-items:center;font-size:12px;border-radius:8px;background:var(--surface-2);cursor:pointer;font-weight:600}
+.cal .d.has::after{content:'';position:absolute;bottom:4px;left:50%;transform:translateX(-50%);width:5px;height:5px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-2))}
+.cal .d.today{outline:2px solid var(--accent)}
+.cal .h{font-size:10px;color:var(--muted);text-align:center;font-weight:700}
+.tag{display:inline-block;padding:2px 8px;border-radius:8px;background:var(--surface-2);font-size:11px;color:var(--muted);font-weight:700;margin-right:4px}
+hr{border:none;border-top:1px solid var(--border);margin:14px 0}
+.hidden{display:none!important}
+.session-card{border:none;border-radius:14px;padding:14px;cursor:pointer;text-align:left;color:#fff;box-shadow:0 6px 16px -8px rgba(0,0,0,.35)}
+.session-card .n{font-weight:800;font-size:15px}
+.session-card .d{opacity:.9;font-size:11px;margin-top:4px}
+.sess-pullA{background:linear-gradient(135deg,#2563eb,#06b6d4)}
+.sess-pushA{background:linear-gradient(135deg,#ef4444,#f97316)}
+.sess-legsA{background:linear-gradient(135deg,#16a34a,#65a30d)}
+.sess-pullB{background:linear-gradient(135deg,#7c3aed,#ec4899)}
+.sess-pushB{background:linear-gradient(135deg,#f43f5e,#fb7185)}
+.sess-reco{background:linear-gradient(135deg,#0ea5e9,#22d3ee)}
+.wake-block{margin-bottom:8px}
+.wake-block summary{cursor:pointer;font-weight:700;padding:6px 0;color:var(--primary)}
+.wake-block .it{padding:4px 0 4px 10px;font-size:13px;border-left:2px solid var(--border);margin-left:4px}
+.chrono-disp{font-variant-numeric:tabular-nums;font-weight:900;font-size:54px;text-align:center;letter-spacing:2px;background:linear-gradient(135deg,var(--primary),var(--primary-2));-webkit-background-clip:text;background-clip:text;color:transparent;margin:14px 0}
+.lap{display:flex;justify-content:space-between;padding:8px 10px;border-bottom:1px solid var(--border);font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="logo"><svg viewBox="0 0 64 64"><g opacity=".3" fill="white"><rect x="4" y="29" width="5" height="8" rx="1.5"/><rect x="55" y="29" width="5" height="8" rx="1.5"/><rect x="9" y="31" width="3" height="4"/><rect x="52" y="31" width="3" height="4"/><rect x="12" y="32" width="40" height="2" rx="1"/></g><text x="32" y="46" text-anchor="middle" font-size="38" font-weight="900" font-family="Arial,sans-serif" fill="white">N</text></svg></div>
+    <div><div class="brand">NakaFitness <small>Train · Track · Progress</small></div></div>
+    <div class="spacer"></div>
+    <button class="icon-btn" id="themeBtn" title="Thème">◐</button>
+    <button class="icon-btn" id="paletteBtn" title="Couleurs">◉</button>
+  </header>
+
+  <section id="view-home">
+    <div class="card">
+      <div class="sub" id="todayLabel"></div>
+      <h2 class="title" style="margin:2px 0">Bonjour Thiathie</h2>
+      <div class="grid4" style="margin-top:10px">
+        <div class="kpi"><b id="kStreak">0</b><span>Streak</span></div>
+        <div class="kpi"><b id="kWeek">0</b><span>Semaine</span></div>
+        <div class="kpi"><b id="kVol">0</b><span>Volume kg</span></div>
+        <div class="kpi"><b id="kMin">0</b><span>Min total</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <h3 class="title" style="margin:0">Routine réveil ☀️</h3>
+        <button class="btn primary sm" id="startWakeBtn">▶ Démarrer</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 class="title">Mes séances</h3>
+      <div class="grid2" id="sessionList"></div>
+      <hr/>
+      <button class="btn ghost" style="width:100%" id="freeStartBtn">Séance libre</button>
+    </div>
+
+    <div class="card">
+      <h3 class="title">Cardio 🏃</h3>
+      <div class="grid3">
+        <button class="btn" data-cardio="Course">Course</button>
+        <button class="btn" data-cardio="Vélo">Vélo</button>
+        <button class="btn" data-cardio="Marche">Marche</button>
+        <button class="btn" data-cardio="Rameur">Rameur</button>
+        <button class="btn" data-cardio="Corde">Corde</button>
+        <button class="btn" data-cardio="HIIT">HIIT</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-seance" class="hidden">
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <div><h3 class="title" id="sessTitle" style="margin:0">Séance</h3><div class="sub" id="sessTime">00:00</div></div>
+        <div class="row"><button class="btn ghost sm" id="sessAddExo">＋ Exo</button><button class="btn primary sm" id="sessFinish">Terminer</button></div>
+      </div>
+      <div id="exoList" style="margin-top:12px"></div>
+    </div>
+    <div class="card">
+      <h3 class="title">Repos</h3>
+      <div class="row">
+        <button class="btn sm" data-rest="60">60s</button>
+        <button class="btn sm" data-rest="90">90s</button>
+        <button class="btn sm" data-rest="120">2 min</button>
+        <button class="btn sm" data-rest="180">3 min</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-chrono" class="hidden">
+    <div class="card">
+      <div class="chrono-disp" id="chDisp">00:00.0</div>
+      <div class="row" style="justify-content:center">
+        <button class="btn primary" id="chStart">Démarrer</button>
+        <button class="btn ghost" id="chLap">Tour</button>
+        <button class="btn danger" id="chReset">Reset</button>
+      </div>
+      <hr/>
+      <div id="chLaps"></div>
+    </div>
+  </section>
+
+  <section id="view-bilan" class="hidden">
+    <div class="card">
+      <h3 class="title">📊 Bilan & Stats</h3>
+      <div class="row">
+        <button class="chip active" data-bsec="hist">Historique</button>
+        <button class="chip" data-bsec="mens">Mensurations</button>
+      </div>
+    </div>
+
+    <div class="card" id="bsec-hist">
+      <h3 class="title">📜 Historique</h3>
+      <div class="row" style="justify-content:space-between">
+        <button class="btn sm ghost" id="hPrev">◀</button>
+        <b id="hLabel"></b>
+        <button class="btn sm ghost" id="hNext">▶</button>
+      </div>
+      <div class="cal" id="hGrid"></div>
+      <div id="hDay" style="margin-top:12px"></div>
+    </div>
+
+    <div class="card hidden" id="bsec-mens">
+      <h3 class="title">📏 Mensurations & poids</h3>
+      <div class="grid2">
+        <div><label class="sub">Poids (kg)</label><input id="mPoids" type="number" inputmode="decimal" step="0.1"/></div>
+        <div><label class="sub">Cou</label><input id="mCou" type="number" inputmode="decimal" step="0.1"/></div>
+        <div><label class="sub">Poitrine</label><input id="mPoit" type="number" inputmode="decimal" step="0.1"/></div>
+        <div><label class="sub">Taille</label><input id="mTai" type="number" inputmode="decimal" step="0.1"/></div>
+        <div><label class="sub">Bassin</label><input id="mBas" type="number" inputmode="decimal" step="0.1"/></div>
+        <div><label class="sub">Bras</label><input id="mBra" type="number" inputmode="decimal" step="0.1"/></div>
+        <div><label class="sub">Cuisses</label><input id="mCui" type="number" inputmode="decimal" step="0.1"/></div>
+        <div><label class="sub">Mollets</label><input id="mMol" type="number" inputmode="decimal" step="0.1"/></div>
+      </div>
+      <div style="margin-top:8px"><label class="sub">Date de la mesure</label><input id="mDate" type="date"/></div>
+      <button class="btn primary" style="width:100%;margin-top:10px" id="saveMens">Enregistrer la mesure</button>
+      <hr/>
+      <h4>Évolution poids</h4>
+      <canvas id="weightChart" height="180"></canvas>
+    </div>
+  </section>
+
+  <section id="view-gerer" class="hidden">
+    <div class="card">
+      <h3 class="title">⚙️ Gérer</h3>
+      <div class="row">
+        <button class="chip active" data-gsec="seances">Séances</button>
+        <button class="chip" data-gsec="wake">Réveil</button>
+        <button class="chip" data-gsec="exos">Catalogue exos</button>
+      </div>
+    </div>
+    <div class="card" id="gsec-seances"><h3 class="title">Mes séances types</h3><div id="gSeanceList"></div><div class="row" style="margin-top:8px;gap:6px"><button class="btn ghost" style="flex:1" id="gAddSeance">＋ Nouvelle séance</button><button class="btn danger" id="gResetSeances">↺ Réinitialiser</button></div></div>
+    <div class="card hidden" id="gsec-wake"><h3 class="title">Routine réveil</h3><div id="gWakeList"></div><div class="row" style="margin-top:8px;gap:6px"><button class="btn ghost" style="flex:1" id="gAddWakeBlock">＋ Nouveau bloc</button><button class="btn danger" id="gResetWake">↺ Réinitialiser</button></div></div>
+    <div class="card hidden" id="gsec-exos"><h3 class="title">Catalogue d'exercices personnalisés</h3><div id="gExoList"></div><button class="btn ghost" style="width:100%;margin-top:8px" id="gAddExo">＋ Ajouter un exercice</button></div>
+  </section>
+</div>
+
+<div class="live-bar" id="liveBar">
+  <div><div style="font-size:11px;opacity:.85" id="liveLabel">Repos</div><div class="t" id="liveTime">00:00</div></div>
+  <div class="spacer"></div>
+  <button class="btn sm" style="background:rgba(255,255,255,.18);color:#fff;border:none" id="liveSkip">Skip</button>
+  <button class="btn sm" style="background:rgba(0,0,0,.25);color:#fff" id="liveMinus">−15s</button>
+  <button class="btn sm" style="background:rgba(0,0,0,.25);color:#fff" id="livePlus">+15s</button>
+</div>
+
+<nav class="tabs">
+  <button class="tab" data-v="home"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 8h-3v9h-4v-6h-4v6H6v-9H3z"/></svg><span>Accueil</span></button>
+  <button class="tab" data-v="seance"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 8h2v8H6zm10 0h2v8h-2zM3 10h2v4H3zm16 0h2v4h-2zM9 11h6v2H9z"/></svg><span>Séance</span></button>
+  <button class="tab center" data-v="chrono"><div class="bubble"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6M12 5V2"/></svg></div><span>Chrono</span></button>
+  <button class="tab" data-v="bilan"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h4v8H3zm7-6h4v14h-4zm7 3h4v11h-4z"/></svg><span>Bilan</span></button>
+  <button class="tab" data-v="gerer"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 8a4 4 0 100 8 4 4 0 000-8zm9 4a9 9 0 01-.1 1.4l2 1.5-2 3.4-2.3-1a7 7 0 01-2.4 1.4l-.4 2.4h-4l-.4-2.4a7 7 0 01-2.4-1.4l-2.3 1-2-3.4 2-1.5A9 9 0 013 12c0-.5 0-1 .1-1.4l-2-1.5 2-3.4 2.3 1A7 7 0 017.8 5.3l.4-2.4h4l.4 2.4a7 7 0 012.4 1.4l2.3-1 2 3.4-2 1.5c.1.4.1.9.1 1.4z"/></svg><span>Gérer</span></button>
+</nav>
+
+<div class="modal" id="paletteModal"><div class="sheet">
+  <h3 class="title">Palette & thème</h3>
+  <div class="row" id="paletteList"></div>
+  <hr/>
+  <div class="row" style="justify-content:space-between"><span>Mode</span>
+    <div class="row"><button class="btn sm" data-theme="light">Clair</button><button class="btn sm" data-theme="dark">Nuit</button></div>
+  </div>
+</div></div>
+
+<div class="modal" id="cropModal"><div class="sheet">
+  <h3 class="title">Recadrer la photo</h3>
+  <div class="sub">Glissez verticalement pour cadrer · zoom ci-dessous</div>
+  <div class="crop-wrap" id="cropWrap" style="margin-top:10px"><img id="cropImg" alt=""/></div>
+  <div style="margin-top:10px"><label class="sub">Zoom</label><input type="range" id="cropZoom" min="1" max="3" step="0.05" value="1" style="width:100%"/></div>
+  <div class="row" style="justify-content:space-between;margin-top:10px">
+    <button class="btn ghost sm" id="cropCancel">Annuler</button>
+    <button class="btn primary" id="cropOk">Valider</button>
+  </div>
+</div></div>
+
+<div class="modal" id="pickExoModal"><div class="sheet">
+  <h3 class="title">Ajouter un exercice</h3>
+  <input id="pickSearch" placeholder="Rechercher dans le catalogue…"/>
+  <div class="row" id="pickFilters" style="margin-top:8px"></div>
+  <div id="pickList" style="margin-top:10px"></div>
+  <hr/>
+  <button class="btn ghost" style="width:100%" id="pickCreate">＋ Créer un exercice personnalisé</button>
+</div></div>
+
+<script>
+const K='naka.v8';
+const CAT=['Pectoraux','Dos','Épaules','Biceps','Triceps','Jambes','Fessiers','Abdos','Mobilité','Cardio'];
+const EXO=[
+  {n:'Développé couché barre',c:'Pectoraux'},{n:'Développé incliné haltères',c:'Pectoraux'},{n:'Écarté couché haltères',c:'Pectoraux'},{n:'Pompes',c:'Pectoraux'},{n:'Dips',c:'Pectoraux'},{n:'Cable fly',c:'Pectoraux'},{n:'Pec deck',c:'Pectoraux'},{n:'Chest Press Machine horizontal',c:'Pectoraux'},{n:'Chest Press Machine Incliné',c:'Pectoraux'},{n:'Dip Dual Machine',c:'Pectoraux'},
+  {n:'Tractions',c:'Dos'},{n:'Traction Pronation',c:'Dos'},{n:'Rowing barre',c:'Dos'},{n:'Rowing haltère',c:'Dos'},{n:'Rowing Machine',c:'Dos'},{n:'Tirage poitrine',c:'Dos'},{n:'Tirage horizontal poulie',c:'Dos'},{n:'Soulevé de terre',c:'Dos'},{n:'Face pull',c:'Dos'},{n:'Hyperextensions',c:'Dos'},{n:'Reverse Fly Machine',c:'Dos'},
+  {n:'Développé militaire',c:'Épaules'},{n:'Développé haltères assis',c:'Épaules'},{n:'Shoulder Press Machine',c:'Épaules'},{n:'Élévations latérales',c:'Épaules'},{n:'Delts Machine Latérale',c:'Épaules'},{n:'Élévations frontales',c:'Épaules'},{n:'Oiseau (rear delt)',c:'Épaules'},{n:'Arnold press',c:'Épaules'},
+  {n:'Curl barre',c:'Biceps'},{n:'Curl haltères alterné',c:'Biceps'},{n:'Curl Haltères Marteau',c:'Biceps'},{n:'Arm Curl Machine',c:'Biceps'},{n:'Curl marteau',c:'Biceps'},{n:'Curl poulie',c:'Biceps'},{n:'Curl pupitre',c:'Biceps'},{n:'Curl incliné',c:'Biceps'},
+  {n:'Pushdown poulie',c:'Triceps'},{n:'Extension nuque haltère',c:'Triceps'},{n:'Extension Triceps Overhead Machine',c:'Triceps'},{n:'Skullcrusher',c:'Triceps'},{n:'Dips chaise',c:'Triceps'},{n:'Kickback haltère',c:'Triceps'},
+  {n:'Squat barre',c:'Jambes'},{n:'Front squat',c:'Jambes'},{n:'Hack Squat',c:'Jambes'},{n:'Presse à cuisses',c:'Jambes'},{n:'Fentes haltères',c:'Jambes'},{n:'Fentes Bulgares Haltères',c:'Jambes'},{n:'Squat bulgare',c:'Jambes'},{n:'Fentes Marchées',c:'Jambes'},{n:'Leg extension',c:'Jambes'},{n:'Leg curl',c:'Jambes'},{n:'Leg Curl Assis',c:'Jambes'},{n:'Adductor Machine',c:'Jambes'},{n:'Soulevé de terre roumain',c:'Jambes'},{n:'Romanian Deadlift (RDL)',c:'Jambes'},{n:'Mollets debout',c:'Jambes'},{n:'Mollets assis',c:'Jambes'},{n:'Seated Calf Raise',c:'Jambes'},
+  {n:'Hip thrust',c:'Fessiers'},{n:'Glute kickback poulie',c:'Fessiers'},{n:'Abduction hanches',c:'Fessiers'},{n:'Pont fessier',c:'Fessiers'},
+  {n:'Crunch',c:'Abdos'},{n:'Planche',c:'Abdos'},{n:'Planche Latérale (Side Plank)',c:'Abdos'},{n:'Relevé de jambes suspendu',c:'Abdos'},{n:'Relevé de Jambe Suspendu',c:'Abdos'},{n:'Ab Wheel Rollout',c:'Abdos'},{n:'Crunch poulie',c:'Abdos'},{n:'Russian twist',c:'Abdos'},{n:'Mountain climber',c:'Abdos'},{n:'Gainage latéral',c:'Abdos'},
+  {n:'Cat-cow',c:'Mobilité'},{n:'Étirement ischios',c:'Mobilité'},{n:'Rotation buste',c:'Mobilité'},{n:"Cercles d'épaules",c:'Mobilité'},{n:'Rotation cou',c:'Mobilité'},{n:"World's greatest stretch",c:'Mobilité'},{n:'Pigeon pose',c:'Mobilité'},{n:'Bird dog',c:'Mobilité'},
+  {n:'Course',c:'Cardio'},{n:'Vélo',c:'Cardio'},{n:'Rameur',c:'Cardio'},{n:'Corde à sauter',c:'Cardio'},{n:'Marche rapide',c:'Cardio'},{n:'HIIT',c:'Cardio'}
+];
+const TPL={
+  pullA:{n:'Pull A',d:'Dos · Biceps · Chaîne postérieure',cls:'sess-pullA',ex:[
+    {n:'Traction Pronation',sets:4,reps:'8'},{n:'Rowing Machine',sets:4,reps:'10'},
+    {n:'Reverse Fly Machine',sets:3,reps:'12'},{n:'Curl Haltères Marteau',sets:3,reps:'10'},
+    {n:'Romanian Deadlift (RDL)',sets:3,reps:'10'}
+  ]},
+  pushA:{n:'Push A',d:'Pectoraux · Épaules · Triceps',cls:'sess-pushA',ex:[
+    {n:'Chest Press Machine horizontal',sets:4,reps:'10'},{n:'Chest Press Machine Incliné',sets:3,reps:'12'},
+    {n:'Shoulder Press Machine',sets:4,reps:'10'},{n:'Delts Machine Latérale',sets:3,reps:'15'},
+    {n:'Extension Triceps Overhead Machine',sets:3,reps:'12'}
+  ]},
+  legsA:{n:'Legs A',d:'Quadriceps · Ischios · Fessiers · Mollets',cls:'sess-legsA',ex:[
+    {n:'Hack Squat',sets:4,reps:'10'},{n:'Leg Curl Assis',sets:4,reps:'12'},
+    {n:'Fentes Bulgares Haltères',sets:3,reps:'10'},{n:'Adductor Machine',sets:3,reps:'15'},
+    {n:'Seated Calf Raise',sets:3,reps:'15'}
+  ]},
+  pullB:{n:'Pull B + Core',d:'Dos · Biceps · Abdos',cls:'sess-pullB',ex:[
+    {n:'Traction Pronation',sets:4,reps:'8'},{n:'Rowing Machine',sets:4,reps:'10'},
+    {n:'Arm Curl Machine',sets:3,reps:'12'},{n:'Relevé de Jambe Suspendu',sets:3,reps:'12'},
+    {n:'Ab Wheel Rollout',sets:3,reps:'8'}
+  ]},
+  pushB:{n:'Push B + Legs B',d:'Pectoraux · Épaules · Jambes · Core',cls:'sess-pushB',ex:[
+    {n:'Chest Press Machine horizontal',sets:4,reps:'10'},{n:'Shoulder Press Machine',sets:4,reps:'10'},
+    {n:'Dip Dual Machine',sets:3,reps:'12'},{n:'Fentes Marchées',sets:3,reps:'12'},
+    {n:'Planche Latérale (Side Plank)',sets:3,reps:'30s'}
+  ]},
+  reco:{n:'Récupération',d:'Repos actif — pas de musculation',cls:'sess-reco',ex:[
+    {n:'Marche 30 min',sets:1,reps:'30 min'},{n:'Mobilité légère',sets:1,reps:'15 min'}
+  ]}
+};
+const WAKE_BLOCKS=[
+  {b:'Bloc 1 — Activation douce (3 min)',ex:[
+    {n:'Respirations diaphragmatiques',d:'60s · Main sur ventre, inspire 4s expire 6s',sec:60},
+    {n:'Rotations de cheville',d:'30s · 10 cercles dans chaque sens',sec:30},
+    {n:'Genoux au ventre + rotation lombaire',d:'60s · Allongé, genoux qui basculent G/D lentement',sec:60},
+    {n:'Chat-Vache',d:'30s · À 4 pattes, dos rond puis creux',sec:30}
+  ]},
+  {b:'Bloc 2 — Colonne & Hanches (4 min)',ex:[
+    {n:'Thread the needle',d:"60s · 4 pattes, un bras sous l'autre, rotation thoracique",sec:60},
+    {n:'Hip flexor stretch dynamique',d:'60s · Fente basse, bassin oscille avant/arrière',sec:60},
+    {n:'Pigeon dynamique',d:'60s · Entrée/sortie lente du pigeon',sec:60},
+    {n:"World's Greatest Stretch",d:'60s · Fente avant, coude au sol, rotation tronc',sec:60}
+  ]},
+  {b:'Bloc 3 — Gainage Dynamique (4 min)',ex:[
+    {n:'Dead Bug',d:"60s · Bras et jambe opposés s'étirent en alternance",sec:60},
+    {n:'Bear Crawl Hold + Tap',d:'60s · 4 pattes genoux à 5 cm, taper épaule G/D',sec:60},
+    {n:'Planche dynamique',d:'60s · Planche → mains → coudes, alterné',sec:60},
+    {n:'Bird Dog',d:'60s · 4 pattes, bras et jambe opposés tendus, hold 2s',sec:60}
+  ]},
+  {b:'Bloc 4 — Épaules & Thorax debout (2 min)',ex:[
+    {n:'Bras en croix — cercles progressifs',d:'30s · Petits → grands cercles',sec:30},
+    {n:'Chest opener dynamique',d:'30s · Bras tendus derrière, ouverture poitrine',sec:30},
+    {n:'Rotation thoracique debout',d:'60s · Pieds écartés, bras croisés, torsions',sec:60}
+  ]},
+  {b:'Bloc 5 — Bas du corps debout (2 min)',ex:[
+    {n:'Hip circles',d:'30s · Mains sur hanches, cercles du bassin',sec:30},
+    {n:'Squat profond + ouverture',d:'30s · Descente lente, coudes poussent les genoux',sec:30},
+    {n:'Leg swings avant/arrière',d:'30s · Jambe qui balance librement',sec:30},
+    {n:'Leg swings latéraux',d:'30s · En croisant devant',sec:30}
+  ]}
+];
+const WAKE_FLAT=WAKE_BLOCKS.flatMap(b=>b.ex);
+const CARDIO_NAMES=['Course','Vélo','Marche','Rameur','Corde','HIIT','Course à pied','Marche rapide','Corde à sauter','Cardio'];
+const isCardio=n=>CARDIO_NAMES.some(c=>n.toLowerCase().includes(c.toLowerCase()));
+
+const def={theme:'dark',palette:'fire',avatar:null,activeSession:null,rest:null,history:[],customExo:[],mensurations:[],calMonth:null,catFilter:'Tous',exoImages:{},bsec:'hist',gsec:'seances',tpl:null,wake:null,chrono:{running:false,start:0,acc:0,laps:[]}};
+let S;try{S=JSON.parse(localStorage.getItem(K))||structuredClone(def)}catch{S=structuredClone(def)}
+for(const k in def)if(S[k]===undefined)S[k]=def[k];
+if(!S.tpl)S.tpl=structuredClone(TPL);
+if(!S.wake)S.wake=structuredClone(WAKE_BLOCKS);
+const wakeFlat=()=>S.wake.flatMap(b=>b.ex);
+const save=()=>localStorage.setItem(K,JSON.stringify(S));
+const $=id=>document.getElementById(id);
+const fmtTime=s=>{s=Math.max(0,Math.floor(s));return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')};
+const fmtMs=ms=>{ms=Math.max(0,ms);const m=Math.floor(ms/60000),s=Math.floor(ms/1000)%60,d=Math.floor(ms/100)%10;return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')+'.'+d};
+const getCSS=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+function applyTheme(){document.documentElement.setAttribute('data-theme',S.theme);document.documentElement.setAttribute('data-palette',S.palette)}
+$('themeBtn').addEventListener('click',()=>{S.theme=S.theme==='dark'?'light':'dark';applyTheme();save()});
+$('paletteBtn').addEventListener('click',()=>$('paletteModal').classList.add('on'));
+document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('on')}));
+const PALS=[['ocean','Océan'],['forest','Forêt'],['sunset','Coucher'],['grape','Raisin'],['fire','Feu'],['mint','Menthe'],['rose','Rose'],['midnight','Minuit']];
+PALS.forEach(([p,n])=>{const b=document.createElement('button');b.className='chip';b.textContent=n;b.dataset.p=p;b.addEventListener('click',()=>{S.palette=p;applyTheme();save();renderPalettes()});$('paletteList').appendChild(b)});
+function renderPalettes(){[...$('paletteList').children].forEach(b=>b.classList.toggle('active',b.dataset.p===S.palette))}
+renderPalettes();
+document.querySelectorAll('[data-theme]').forEach(b=>b.addEventListener('click',()=>{S.theme=b.dataset.theme;applyTheme();save()}));
+
+// avatar removed
+// Notifications (bouton retiré, fonctionnalité optionnelle)
+// Wake Lock pour garder l'écran allumé pendant la séance
+let wakeLock=null;
+async function acquireWakeLock(){try{if('wakeLock' in navigator){wakeLock=await navigator.wakeLock.request('screen')}}catch(e){}}
+function releaseWakeLock(){try{wakeLock?.release();wakeLock=null}catch(e){}}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&S.activeSession&&!wakeLock)acquireWakeLock()});
+
+// Préset images d'exercices (vide — l'utilisateur importe les siennes)
+const PRESET_IMG={};
+function imgFor(name){return S.exoImages[name]||PRESET_IMG[name]||null}
+
+// Recadrage interactif 3:4 (portrait) avec drag vertical et zoom
+function cropImage(file){return new Promise(res=>{
+  const r=new FileReader();
+  r.onload=()=>{
+    const img=new Image();
+    img.onload=()=>{
+      const m=document.getElementById('cropModal');
+      const wrap=document.getElementById('cropWrap');
+      const ph=document.getElementById('cropImg');
+      const zoom=document.getElementById('cropZoom');
+      ph.src=img.src;
+      let scale=1, oy=0;
+      const apply=()=>{
+        const wW=wrap.clientWidth, wH=wrap.clientHeight;
+        const ratio=img.width/img.height;
+        let dW=wW*scale, dH=dW/ratio;
+        if(dH<wH){dH=wH*scale;dW=dH*ratio}
+        ph.style.width=dW+'px';ph.style.height=dH+'px';
+        const minY=wH-dH, minX=wW-dW;
+        if(oy<minY)oy=minY;if(oy>0)oy=0;
+        const ox=(wW-dW)/2;
+        ph.style.left=ox+'px';ph.style.top=oy+'px';
+        ph._dW=dW;ph._dH=dH;ph._ox=ox;ph._oy=oy;ph._wW=wW;ph._wH=wH;
+      };
+      zoom.value=1;zoom.oninput=()=>{scale=+zoom.value;apply()};
+      let dragY=null;
+      const start=e=>{const t=e.touches?e.touches[0]:e;dragY=t.clientY-oy};
+      const move=e=>{if(dragY===null)return;e.preventDefault();const t=e.touches?e.touches[0]:e;oy=t.clientY-dragY;apply()};
+      const end=()=>{dragY=null};
+      wrap.ontouchstart=start;wrap.ontouchmove=move;wrap.ontouchend=end;
+      wrap.onmousedown=start;wrap.onmousemove=move;wrap.onmouseup=end;wrap.onmouseleave=end;
+      m.classList.add('on');setTimeout(apply,30);
+      document.getElementById('cropOk').onclick=()=>{
+        const wW=ph._wW,wH=ph._wH,dW=ph._dW,dH=ph._dH,ox=ph._ox,oyy=ph._oy;
+        const sx=(-ox)*(img.width/dW);
+        const sy=(-oyy)*(img.height/dH);
+        const sw=wW*(img.width/dW);
+        const sh=wH*(img.height/dH);
+        const c=document.createElement('canvas');c.width=600;c.height=600;
+        c.getContext('2d').drawImage(img,sx,sy,sw,sh,0,0,600,600);
+        m.classList.remove('on');
+        res(c.toDataURL('image/jpeg',.85));
+      };
+      document.getElementById('cropCancel').onclick=()=>{m.classList.remove('on');res(null)};
+    };
+    img.src=r.result;
+  };
+  r.readAsDataURL(file);
+})}
+
+// Recherche dernière performance d'un exo
+function lastPerf(exoName){
+  for(let i=S.history.length-1;i>=0;i--){const h=S.history[i];const e=h.exos?.find(x=>x.n===exoName);
+    if(e){const last=e.sets.find(s=>s.kg||s.reps);if(last)return{kg:last.kg,reps:last.reps}}}
+  return null;
+}
+// Récupère les sets de la dernière séance pour cet exo (pour affichage par-série)
+function lastPerfSets(exoName){
+  for(let i=S.history.length-1;i>=0;i--){const e=S.history[i].exos?.find(x=>x.n===exoName);
+    if(e&&e.sets&&e.sets.some(s=>s.kg||s.reps))return e.sets}
+  return null;
+}
+// Suggestion progressive: +2.5kg si dernière perf complète
+function suggest(exoName,target){
+  const p=lastPerf(exoName);if(!p)return{kg:'',reps:target||''};
+  const k=parseFloat(p.kg);const r=parseInt(p.reps);
+  return{kg:isNaN(k)?'':(k+2.5).toString(),reps:isNaN(r)?(target||''):r.toString()};
+}
+
+const VIEWS=['home','seance','chrono','bilan','gerer'];
+function go(v){
+  VIEWS.forEach(x=>$('view-'+x)?.classList.toggle('hidden',x!==v));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.v===v));
+  ({home:renderHome,seance:renderSession,chrono:renderChrono,bilan:renderBilan,gerer:renderGerer}[v])?.();
+  window.scrollTo({top:0,behavior:'instant'});
+}
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>go(t.dataset.v)));
+
+function renderHome(){
+  $('todayLabel').textContent=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}).replace(/^./,c=>c.toUpperCase());
+  const wk=new Date();wk.setDate(wk.getDate()-7);
+  const recent=S.history.filter(h=>h.date>wk.getTime());
+  $('kWeek').textContent=recent.length;
+  $('kVol').textContent=Math.round(recent.reduce((s,h)=>s+(h.volume||0),0));
+  $('kMin').textContent=Math.round(recent.reduce((s,h)=>s+(h.duration||0)/60,0));
+  let streak=0;const days=new Set(S.history.map(h=>new Date(h.date).toDateString()));
+  for(let i=0;i<60;i++){const d=new Date();d.setDate(d.getDate()-i);if(days.has(d.toDateString()))streak++;else if(i>0)break}
+  $('kStreak').textContent=streak;
+  const sl=$('sessionList');sl.innerHTML='';
+  Object.entries(S.tpl).forEach(([k,t])=>{const c=document.createElement('button');c.className='session-card '+t.cls;
+    c.innerHTML=`<div class="n">${t.n}</div><div class="d">${t.d}</div><div class="d">${t.ex.length} exercices</div>`;
+    c.addEventListener('click',()=>startSession(t));sl.appendChild(c)});
+}
+
+function renderGerer(){
+  document.querySelectorAll('[data-gsec]').forEach(b=>b.classList.toggle('active',b.dataset.gsec===S.gsec));
+  ['seances','wake','exos'].forEach(s=>$('gsec-'+s).classList.toggle('hidden',S.gsec!==s));
+  if(S.gsec==='seances')renderGSeances();
+  else if(S.gsec==='wake')renderGWake();
+  else renderGExos();
+}
+document.querySelectorAll('[data-gsec]').forEach(b=>b.addEventListener('click',()=>{S.gsec=b.dataset.gsec;save();renderGerer()}));
+
+function renderGSeances(){
+  const list=$('gSeanceList');list.innerHTML='';
+  Object.entries(S.tpl).forEach(([k,t])=>{
+    const d=document.createElement('div');d.className='exo';
+    d.innerHTML=`<div class="row" style="justify-content:space-between"><div><b>${t.n}</b><div class="sub">${t.d}</div></div><div class="row"><button class="btn sm ghost sEdit">✏️</button><button class="btn sm danger sDel">🗑</button></div></div>`;
+    const exoWrap=document.createElement('div');exoWrap.style.marginTop='8px';
+    t.ex.forEach((e,ei)=>{const r=document.createElement('div');r.className='row';r.style.cssText='justify-content:space-between;padding:4px 0;border-top:1px solid var(--border);gap:6px';
+      r.innerHTML=`<span style="flex:1">${e.n} <span class="sub">· ${e.sets}×${e.reps}</span></span>`;
+      const edit=document.createElement('button');edit.className='btn sm ghost';edit.textContent='✏️';
+      edit.onclick=()=>{const sets=parseInt(prompt('Séries ?',e.sets))||e.sets;const reps=prompt('Reps ?',e.reps)||e.reps;e.sets=sets;e.reps=reps;save();renderGSeances()};
+      const del=document.createElement('button');del.className='btn sm ghost';del.textContent='✕';
+      del.onclick=()=>{if(confirm('Supprimer cet exercice ?')){t.ex.splice(ei,1);save();renderGSeances()}};
+      r.appendChild(edit);r.appendChild(del);exoWrap.appendChild(r)});
+    const add=document.createElement('button');add.className='btn sm ghost';add.style.marginTop='6px';add.textContent='＋ Exo';
+    add.onclick=()=>openPickExo(n=>{const sets=parseInt(prompt('Séries ?','3'))||3;const reps=prompt('Reps ?','10')||'10';t.ex.push({n,sets,reps});save();renderGSeances()});
+    exoWrap.appendChild(add);d.appendChild(exoWrap);
+    d.querySelector('.sEdit').onclick=()=>{const nn=prompt('Nom ?',t.n);if(nn===null)return;const dd=prompt('Description ?',t.d)||t.d;t.n=nn||t.n;t.d=dd;save();renderGSeances()};
+    d.querySelector('.sDel').onclick=()=>{if(confirm('Supprimer cette séance ?')){delete S.tpl[k];save();renderGSeances()}};
+    list.appendChild(d);
+  });
+}
+$('gAddSeance').onclick=()=>{const n=prompt('Nom de la séance ?');if(!n)return;const k='c'+Date.now();S.tpl[k]={n,d:'Personnalisée',cls:'sess-reco',ex:[]};save();renderGSeances()};
+$('gResetSeances').onclick=()=>{if(confirm('Réinitialiser toutes les séances de base avec leurs exercices ? Vos séances personnalisées seront conservées.')){Object.keys(TPL).forEach(k=>{S.tpl[k]=structuredClone(TPL[k])});save();renderGSeances()}};
+
+function renderGWake(){
+  const list=$('gWakeList');list.innerHTML='';
+  S.wake.forEach((b,bi)=>{const d=document.createElement('div');d.className='exo';
+    d.innerHTML=`<div class="row" style="justify-content:space-between"><b>${b.b}</b><div class="row"><button class="btn sm ghost wbEdit">✏️</button><button class="btn sm danger wbDel">🗑</button></div></div>`;
+    b.ex.forEach((e,ei)=>{const r=document.createElement('div');r.className='row';r.style.cssText='justify-content:space-between;padding:4px 0;border-top:1px solid var(--border);gap:6px';
+      r.innerHTML=`<span style="flex:1">${e.n} <span class="sub">· ${e.sec}s</span></span>`;
+      const edit=document.createElement('button');edit.className='btn sm ghost';edit.textContent='✏️';
+      edit.onclick=()=>{const nn=prompt('Nom ?',e.n)||e.n;const sec=parseInt(prompt('Durée (s) ?',e.sec))||e.sec;const dd=prompt('Description ?',e.d||'')||e.d;e.n=nn;e.sec=sec;e.d=dd;save();renderGWake()};
+      const del=document.createElement('button');del.className='btn sm ghost';del.textContent='✕';
+      del.onclick=()=>{if(confirm('Supprimer cet exercice ?')){b.ex.splice(ei,1);save();renderGWake()}};
+      r.appendChild(edit);r.appendChild(del);d.appendChild(r)});
+    const add=document.createElement('button');add.className='btn sm ghost';add.style.marginTop='6px';add.textContent='＋ Exo';
+    add.onclick=()=>{const n=prompt('Nom ?');if(!n)return;const sec=parseInt(prompt('Durée (s) ?','30'))||30;const dd=prompt('Description ?','')||'';b.ex.push({n,d:dd,sec});save();renderGWake()};
+    d.appendChild(add);
+    d.querySelector('.wbEdit').onclick=()=>{const nn=prompt('Nom du bloc ?',b.b);if(nn)b.b=nn;save();renderGWake()};
+    d.querySelector('.wbDel').onclick=()=>{if(confirm('Supprimer ce bloc ?')){S.wake.splice(bi,1);save();renderGWake()}};
+    list.appendChild(d);
+  });
+}
+$('gAddWakeBlock').onclick=()=>{const n=prompt('Nom du bloc ?');if(!n)return;S.wake.push({b:n,ex:[]});save();renderGWake()};
+$('gResetWake').onclick=()=>{if(confirm('Réinitialiser la routine réveil de base ?')){S.wake=structuredClone(WAKE_BLOCKS);save();renderGWake()}};
+
+function renderGExos(){
+  const list=$('gExoList');list.innerHTML='';
+  S.customExo.forEach((e,ei)=>{const r=document.createElement('div');r.className='row';r.style.cssText='justify-content:space-between;padding:8px;border:1px solid var(--border);border-radius:10px;margin-bottom:6px;gap:6px';
+    r.innerHTML=`<span style="flex:1"><b>${e.n}</b> <span class="sub">${e.c}</span></span>`;
+    const edit=document.createElement('button');edit.className='btn sm ghost';edit.textContent='✏️';
+    edit.onclick=()=>{const nn=prompt('Nom ?',e.n)||e.n;const cc=prompt('Catégorie ?',e.c)||e.c;e.n=nn;e.c=cc;save();renderGExos()};
+    const del=document.createElement('button');del.className='btn sm danger';del.textContent='🗑';
+    del.onclick=()=>{if(confirm('Supprimer cet exercice ?')){S.customExo.splice(ei,1);save();renderGExos()}};
+    r.appendChild(edit);r.appendChild(del);list.appendChild(r)});
+  if(!S.customExo.length)list.innerHTML='<div class="sub">Aucun exo perso. Le catalogue de base contient déjà '+EXO.length+' exercices.</div>';
+}
+$('gAddExo').onclick=()=>{const n=prompt("Nom de l'exercice ?");if(!n)return;const c=prompt('Catégorie ('+CAT.join(', ')+') ?')||'Mobilité';S.customExo.push({n,c});save();renderGExos()};
+
+$('startWakeBtn').addEventListener('click',()=>{
+  startSession({n:'☀️ Routine réveil',d:'Mobilité',cls:'sess-reco',mode:'auto',ex:wakeFlat().map(w=>({n:w.n,d:w.d,sec:w.sec||30}))});
 });
-let timerId=null;
-self.addEventListener('message',e=>{
-  if(e.data?.type==='TIMER_SET'){
-    if(timerId)clearTimeout(timerId);
-    const ms=Math.max(0,e.data.endAt-Date.now());
-    timerId=setTimeout(()=>{
-      self.registration.showNotification('⏱️ Repos terminé',{body:'Prochaine série !',vibrate:[300,150,300,150,300],tag:'rest',renotify:true,silent:false,requireInteraction:true});
-    },ms);
+$('freeStartBtn').addEventListener('click',()=>startSession({n:'Séance libre',d:'',cls:'sess-reco',ex:[]}));
+document.querySelectorAll('[data-cardio]').forEach(b=>b.addEventListener('click',()=>{
+  startSession({n:'Cardio · '+b.dataset.cardio,d:'',cls:'sess-reco',ex:[{n:b.dataset.cardio,sets:1,reps:''}]});
+}));
+
+function startSession(tpl){
+  if(tpl.mode==='auto'){
+    S.activeSession={name:tpl.n,startedAt:Date.now(),mode:'auto',idx:0,paused:true,steps:tpl.ex.map(e=>({n:e.n,d:e.d,sec:e.sec})),exos:[]};
+  } else {
+    S.activeSession={name:tpl.n,startedAt:Date.now(),exos:tpl.ex.map(e=>({n:e.n,sets:Array.from({length:e.sets||3},()=>({reps:'',kg:'',done:false})),target:e.reps||''}))};
   }
-  if(e.data?.type==='TIMER_CANCEL'){if(timerId)clearTimeout(timerId);timerId=null}
+  acquireWakeLock();save();go('seance');
+}
+
+let sessTick,autoTick;
+function renderSession(){
+  if(!S.activeSession){$('sessTitle').textContent='Aucune séance';$('sessTime').textContent='';$('exoList').innerHTML='<div class="sub">Lance une séance depuis l\'accueil.</div>';clearInterval(sessTick);clearInterval(autoTick);return}
+  $('sessTitle').textContent=S.activeSession.name;
+  const tick=()=>{const s=Math.floor((Date.now()-S.activeSession.startedAt)/1000);$('sessTime').textContent=fmtTime(s)};
+  tick();clearInterval(sessTick);sessTick=setInterval(tick,1000);
+  const el=$('exoList');el.innerHTML='';
+  // ===== MODE AUTO (mobilité) =====
+  if(S.activeSession.mode==='auto'){
+    const A=S.activeSession;const cur=A.steps[A.idx];
+    if(!cur){el.innerHTML='<div class="sub">Routine terminée 🎉</div>';return}
+    const card=document.createElement('div');card.className='exo';
+    const img=imgFor(cur.n);
+    card.innerHTML=`
+      <h4 style="font-size:18px">${cur.n}</h4>
+      <div class="sub">${cur.d}</div>
+      ${img?`<img src="${img}" style="width:100%;max-height:200px;object-fit:contain;border-radius:10px;margin-top:8px"/>`:''}
+      <div class="chrono-disp" id="autoT" style="font-size:42px;margin:10px 0">${cur.sec}s</div>
+      <div class="row" style="justify-content:center">
+        <button class="btn ghost" id="autoPrev">◀ Précédent</button>
+        <button class="btn primary" id="autoPP">${A.paused?'▶ Démarrer':'⏸ Pause'}</button>
+        <button class="btn ghost" id="autoNext">Suivant ▶</button>
+      </div>
+      <div class="row" style="justify-content:center;margin-top:8px">
+        <button class="btn danger sm" id="autoStop">■ Arrêter la séance</button>
+      </div>
+      <div class="sub" style="text-align:center;margin-top:6px">${A.idx+1} / ${A.steps.length}</div>`;
+    el.appendChild(card);
+    let left=A.remaining??cur.sec;
+    const dt=$('autoT');
+    clearInterval(autoTick);
+    if(!A.paused){
+      A._tickStart=Date.now();
+      autoTick=setInterval(()=>{
+        const elapsed=Math.floor((Date.now()-A._tickStart)/1000);
+        const rem=Math.max(0,(A.remaining??cur.sec)-elapsed);
+        dt.textContent=rem+'s';
+        if(rem<=0){clearInterval(autoTick);beep();if('vibrate' in navigator)navigator.vibrate(150);
+          A.idx++;A.remaining=null;A.paused=false;save();
+          if(A.idx>=A.steps.length){A.paused=true;A.remaining=null}
+          renderSession();
+        }
+      },250);
+    } else dt.textContent=(A.remaining??cur.sec)+'s';
+    $('autoPP').onclick=()=>{
+      if(A.paused){A.paused=false;A.remaining=A.remaining??cur.sec;save();renderSession()}
+      else{const elapsed=Math.floor((Date.now()-A._tickStart)/1000);A.remaining=Math.max(0,(A.remaining??cur.sec)-elapsed);A.paused=true;save();renderSession()}
+    };
+    $('autoPrev').onclick=()=>{if(A.idx>0){A.idx--;A.remaining=null;A.paused=true;save();renderSession()}};
+    $('autoNext').onclick=()=>{A.idx++;A.remaining=null;A.paused=true;save();if(A.idx>=A.steps.length){A.idx=A.steps.length-1}renderSession()};
+    $('autoStop').onclick=()=>{if(confirm('Arrêter la séance ?')){releaseWakeLock();S.activeSession=null;save();go('home')}};
+    return;
+  }
+  // ===== MODE CLASSIQUE =====
+  let totalVol=0;
+  S.activeSession.exos.forEach((e,ei)=>{const cardio=isCardio(e.n);
+    const d=document.createElement('div');d.className='exo exo-grid';
+    const prevSets=lastPerfSets(e.n);
+    const sug=suggest(e.n,e.target);
+    const img=imgFor(e.n);
+    const total=e.sets.length;
+    const doneCount=e.sets.filter(s=>s.done).length;
+    const u1=cardio?'m':'kg', u2=cardio?'s':'reps';
+    const slotId='img_'+ei;
+    d.innerHTML=`
+      <label class="exo-imgL" for="${slotId}">${img?`<img src="${img}"/>`:'📷<br>Photo'}</label>
+      <div class="exo-info">
+        <h4>${e.n}</h4>
+        <div style="border-top:1px solid var(--border);margin-top:4px"></div>
+        <div class="set-head"><span>Préc</span><span>${u1}</span><span>Préc</span><span>${u2}</span><span></span></div>
+        <div class="sets-wrap"></div>
+      </div>`;
+    const inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.hidden=true;inp.id=slotId;
+    inp.addEventListener('change',async ev=>{const f=ev.target.files[0];if(!f)return;const data=await cropImage(f);if(data){S.exoImages[e.n]=data;save();renderSession()}});
+    d.appendChild(inp);
+    const wrap=d.querySelector('.sets-wrap');
+    e.sets.forEach((s,si)=>{
+      const r=document.createElement('div');r.className='set-grid'+(s.done?' done':'');
+      const pK=prevSets&&prevSets[si]?(prevSets[si].kg||'—'):'—';
+      const pR=prevSets&&prevSets[si]?(prevSets[si].reps||'—'):'—';
+      const phK=sug.kg||'';const phR=sug.reps||'';
+      r.innerHTML=`<span class="prev">${pK}</span><input type="number" inputmode="numeric" value="${s.kg}" placeholder="${phK||u1}"><span class="prev">${pR}</span><input type="number" inputmode="numeric" value="${s.reps}" placeholder="${phR||u2}"><button class="ok-btn">✓</button>`;
+      const[ki,ri,ok]=r.querySelectorAll('input,button');
+      ki.addEventListener('input',()=>{s.kg=ki.value;save();updTotal()});
+      ri.addEventListener('input',()=>{s.reps=ri.value;save();updTotal()});
+      ok.addEventListener('click',()=>{s.done=!s.done;
+        if(s.done&&!s.kg&&phK)s.kg=phK;
+        if(s.done&&!s.reps&&phR)s.reps=phR;
+        if(s.done){ki.value=s.kg;ri.value=s.reps}
+        save();r.classList.toggle('done',s.done);
+        const dc=e.sets.filter(x=>x.done).length;const pe=d.querySelector('.prog');if(pe)pe.textContent=dc+'/'+total;
+        if(s.done){if('vibrate' in navigator)navigator.vibrate(30);startRest(90);updTotal()}
+      });
+      wrap.appendChild(r);
+      if(!cardio)totalVol+=(+s.kg||0)*(+s.reps||0);
+    });
+    const add=document.createElement('button');add.className='btn sm ghost';add.style.marginTop='6px';add.textContent='＋ Série';
+    add.addEventListener('click',()=>{e.sets.push({reps:'',kg:'',done:false});save();renderSession()});
+    d.querySelector('.exo-info').appendChild(add);
+    el.appendChild(d)});
+  // Volume total
+  const vt=document.createElement('div');vt.className='kpi';vt.style.marginTop='10px';
+  vt.innerHTML=`<b id="totVol">${Math.round(totalVol)}</b><span>Volume total kg</span>`;el.appendChild(vt);
+  function updTotal(){let v=0;S.activeSession.exos.forEach(e=>{if(!isCardio(e.n))e.sets.forEach(s=>v+=(+s.kg||0)*(+s.reps||0))});const t=$('totVol');if(t)t.textContent=Math.round(v)}
+}
+$('sessAddExo').addEventListener('click',()=>{if(!S.activeSession)return;openPickExo(n=>{S.activeSession.exos.push({n,sets:[{reps:'',kg:'',done:false},{reps:'',kg:'',done:false},{reps:'',kg:'',done:false}],target:''});save();renderSession()})});
+$('sessFinish').addEventListener('click',()=>{
+  if(!S.activeSession)return;
+  const dur=Math.floor((Date.now()-S.activeSession.startedAt)/1000);
+  const vol=(S.activeSession.exos||[]).reduce((t,e)=>t+e.sets.reduce((u,s)=>u+(+s.kg||0)*(+s.reps||0),0),0);
+  S.history.push({date:Date.now(),name:S.activeSession.name,duration:dur,volume:vol,exos:S.activeSession.exos||[]});
+  releaseWakeLock();S.activeSession=null;save();go('home');
 });
-self.addEventListener('notificationclick',e=>{e.notification.close();e.waitUntil(self.clients.matchAll({type:'window'}).then(cs=>cs[0]?cs[0].focus():self.clients.openWindow('./')))});
+
+document.querySelectorAll('[data-rest]').forEach(b=>b.addEventListener('click',()=>startRest(+b.dataset.rest)));
+$('liveSkip').addEventListener('click',()=>{S.rest=null;save();updateLive()});
+$('liveMinus').addEventListener('click',()=>{if(S.rest){S.rest.endAt-=15000;save();updateLive();reschedSW()}});
+$('livePlus').addEventListener('click',()=>{if(S.rest){S.rest.endAt+=15000;save();updateLive();reschedSW()}});
+
+let audioCtx;
+function beep(){
+  try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
+    const t=audioCtx.currentTime;
+    [0,0.3,0.6].forEach(off=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+      o.type='sine';o.frequency.value=880;
+      g.gain.setValueAtTime(0,t+off);g.gain.linearRampToValueAtTime(0.25,t+off+0.02);g.gain.linearRampToValueAtTime(0,t+off+0.22);
+      o.connect(g).connect(audioCtx.destination);o.start(t+off);o.stop(t+off+0.25)})
+  }catch(e){}
+}
+function reschedSW(){if(S.rest)navigator.serviceWorker?.controller?.postMessage({type:'TIMER_SET',endAt:S.rest.endAt})}
+function startRest(sec){
+  S.rest={endAt:Date.now()+sec*1000,beeped:false};save();updateLive();
+  reschedSW();
+  if('Notification' in window && Notification.permission==='default')Notification.requestPermission();
+  if('vibrate' in navigator)navigator.vibrate(40);
+}
+function updateLive(){
+  if(!S.rest){$('liveBar').classList.remove('on');return}
+  $('liveBar').classList.add('on');$('liveLabel').textContent='Repos';
+  const left=Math.ceil((S.rest.endAt-Date.now())/1000);
+  if(left<=0){
+    $('liveTime').textContent='00:00';
+    if(!S.rest.beeped){S.rest.beeped=true;beep();if('vibrate' in navigator)navigator.vibrate([300,150,300,150,300])}
+    setTimeout(()=>{S.rest=null;save();$('liveBar').classList.remove('on')},1800)
+  } else $('liveTime').textContent=fmtTime(left);
+}
+setInterval(updateLive,300);
+
+// pick exo with category dropdown
+function openPickExo(cb){
+  const m=$('pickExoModal');m.classList.add('on');$('pickSearch').value='';
+  const filt=$('pickFilters');filt.innerHTML='';
+  ['Tous',...CAT].forEach(c=>{const b=document.createElement('button');b.className='chip'+(S.catFilter===c?' active':'');b.textContent=c;b.addEventListener('click',()=>{S.catFilter=c;save();render()});filt.appendChild(b)});
+  const render=()=>{filt.querySelectorAll('.chip').forEach(b=>b.classList.toggle('active',b.textContent===S.catFilter));
+    const q=$('pickSearch').value.toLowerCase();
+    const list=[...EXO,...S.customExo].filter(e=>(S.catFilter==='Tous'||e.c===S.catFilter)&&e.n.toLowerCase().includes(q));
+    $('pickList').innerHTML='';
+    list.forEach(e=>{const b=document.createElement('button');b.className='btn';b.style.cssText='width:100%;text-align:left;margin-bottom:6px';b.innerHTML=`<b>${e.n}</b> <span class="sub">${e.c}</span>`;b.addEventListener('click',()=>{m.classList.remove('on');cb(e.n)});$('pickList').appendChild(b)})};
+  $('pickSearch').oninput=render;render();
+}
+$('pickCreate').addEventListener('click',()=>{const n=prompt("Nom de l'exercice ?");if(!n)return;const c=prompt('Catégorie ('+CAT.join(', ')+') ?')||'Mobilité';S.customExo.push({n,c});save();$('pickExoModal').classList.remove('on')});
+
+// BILAN (history + mensurations)
+function renderBilan(){
+  document.querySelectorAll('[data-bsec]').forEach(b=>b.classList.toggle('active',b.dataset.bsec===S.bsec));
+  $('bsec-hist').classList.toggle('hidden',S.bsec!=='hist');
+  $('bsec-mens').classList.toggle('hidden',S.bsec!=='mens');
+  if(S.bsec==='hist')renderHist(); else renderMens();
+}
+document.querySelectorAll('[data-bsec]').forEach(b=>b.addEventListener('click',()=>{S.bsec=b.dataset.bsec;save();renderBilan()}));
+
+function renderMens(){
+  const todayISO=new Date().toISOString().slice(0,10);
+  if(!$('mDate').value)$('mDate').value=todayISO;
+  $('saveMens').textContent='Enregistrer la mesure';
+  $('saveMens').onclick=()=>{
+    const d=$('mDate').value?new Date($('mDate').value+'T12:00').getTime():Date.now();
+    const m={date:d,poids:+$('mPoids').value||null,cou:+$('mCou').value||null,poit:+$('mPoit').value||null,tai:+$('mTai').value||null,bas:+$('mBas').value||null,bra:+$('mBra').value||null,cui:+$('mCui').value||null,mol:+$('mMol').value||null};
+    S.mensurations.push(m);S.mensurations.sort((a,b)=>a.date-b.date);save();renderMens();
+  };
+  let mListEl=$('mensList');
+  if(!mListEl){mListEl=document.createElement('div');mListEl.id='mensList';mListEl.style.marginTop='10px';$('bsec-mens').appendChild(mListEl)}
+  mListEl.innerHTML='<h4>Historique des mesures</h4>';
+  if(!S.mensurations.length)mListEl.innerHTML+='<div class="sub">Aucune mesure</div>';
+  S.mensurations.slice().reverse().forEach((m)=>{
+    const idx=S.mensurations.indexOf(m);
+    const r=document.createElement('div');r.className='exo';
+    const dt=new Date(m.date).toLocaleDateString('fr-FR');
+    r.innerHTML=`<div class="row" style="justify-content:space-between"><div><b>${dt}</b><div class="sub">Poids: ${m.poids||'—'}kg · Tour de taille: ${m.tai||'—'}cm · Bras: ${m.bra||'—'}cm</div></div><div class="row"><button class="btn sm ghost mEdit">✏️</button><button class="btn sm danger mDel">🗑</button></div></div>`;
+    r.querySelector('.mDel').onclick=()=>{if(confirm('Supprimer cette mesure ?')){S.mensurations.splice(idx,1);save();renderMens()}};
+    r.querySelector('.mEdit').onclick=()=>{
+      $('mDate').value=new Date(m.date).toISOString().slice(0,10);
+      $('mPoids').value=m.poids||'';$('mCou').value=m.cou||'';$('mPoit').value=m.poit||'';$('mTai').value=m.tai||'';$('mBas').value=m.bas||'';$('mBra').value=m.bra||'';$('mCui').value=m.cui||'';$('mMol').value=m.mol||'';
+      $('saveMens').textContent='💾 Mettre à jour cette mesure';
+      $('saveMens').onclick=()=>{const d=$('mDate').value?new Date($('mDate').value+'T12:00').getTime():m.date;Object.assign(S.mensurations[idx],{date:d,poids:+$('mPoids').value||null,cou:+$('mCou').value||null,poit:+$('mPoit').value||null,tai:+$('mTai').value||null,bas:+$('mBas').value||null,bra:+$('mBra').value||null,cui:+$('mCui').value||null,mol:+$('mMol').value||null});S.mensurations.sort((a,b)=>a.date-b.date);save();renderMens()};
+    };
+    mListEl.appendChild(r);
+  });
+  if(window._wc)window._wc.destroy();
+  const data=S.mensurations.filter(m=>m.poids).map(m=>({x:new Date(m.date).toLocaleDateString('fr-FR'),y:m.poids}));
+  window._wc=new Chart($('weightChart'),{type:'line',data:{labels:data.map(d=>d.x),datasets:[{label:'Poids (kg)',data:data.map(d=>d.y),borderColor:getCSS('--primary'),backgroundColor:getCSS('--primary')+'33',tension:.3,fill:true}]},options:{plugins:{legend:{labels:{color:getCSS('--text')}}},scales:{x:{ticks:{color:getCSS('--muted')}},y:{ticks:{color:getCSS('--muted')}}}}});
+}
+
+$('hPrev').addEventListener('click',()=>histMove(-1));
+$('hNext').addEventListener('click',()=>histMove(1));
+function histMove(n){const m=new Date(S.calMonth||new Date());m.setMonth(m.getMonth()+n);S.calMonth=m.toISOString();renderHist()}
+function renderHist(){
+  const m=S.calMonth?new Date(S.calMonth):new Date();m.setDate(1);S.calMonth=m.toISOString();
+  $('hLabel').textContent=m.toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
+  const cg=$('hGrid');cg.innerHTML='';
+  ['L','M','M','J','V','S','D'].forEach(d=>{const e=document.createElement('div');e.className='h';e.textContent=d;cg.appendChild(e)});
+  const first=(m.getDay()+6)%7,days=new Date(m.getFullYear(),m.getMonth()+1,0).getDate();
+  for(let i=0;i<first;i++)cg.appendChild(document.createElement('div'));
+  const map={};S.history.forEach(h=>{const k=new Date(h.date).toDateString();(map[k]=map[k]||[]).push(h)});
+  const today=new Date().toDateString();
+  for(let d=1;d<=days;d++){const dt=new Date(m.getFullYear(),m.getMonth(),d);const k=dt.toDateString();
+    const evs=map[k]||[];const el=document.createElement('div');el.className='d'+(evs.length?' has':'')+(k===today?' today':'');
+    el.textContent=d;el.addEventListener('click',()=>showHistDay(k,evs));cg.appendChild(el)}
+  showHistDay(today,map[today]||[]);
+}
+function showHistDay(k,evs){const d=new Date(k);
+  const wrap=$('hDay');
+  wrap.innerHTML=`<div class="row" style="justify-content:space-between"><b>${d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})}</b><button class="btn sm primary" id="hAddBtn">＋ Ajouter</button></div>`;
+  const list=document.createElement('div');list.style.marginTop='8px';
+  if(!evs.length)list.innerHTML='<div class="sub">Aucune séance</div>';
+  evs.forEach(h=>{const idx=S.history.indexOf(h);const r=document.createElement('div');r.className='exo';
+    r.innerHTML=`<div class="row" style="justify-content:space-between"><div><h4 style="margin:0">${h.name}</h4><div class="sub">${Math.round((h.duration||0)/60)} min · ${Math.round(h.volume||0)} kg vol</div></div><div class="row"><button class="btn sm ghost hEdit">✏️</button><button class="btn sm danger hDel">🗑</button></div></div>`;
+    r.querySelector('.hDel').onclick=()=>{if(confirm('Supprimer cette séance ?')){S.history.splice(idx,1);save();renderHist()}};
+    r.querySelector('.hEdit').onclick=()=>{
+      const nn=prompt('Nom de la séance ?',h.name);if(nn===null)return;
+      const dur=prompt('Durée (minutes) ?',Math.round((h.duration||0)/60));if(dur===null)return;
+      const vol=prompt('Volume total (kg) ?',Math.round(h.volume||0));if(vol===null)return;
+      h.name=nn;h.duration=(+dur||0)*60;h.volume=+vol||0;save();renderHist();
+    };
+    list.appendChild(r);
+  });
+  wrap.appendChild(list);
+  $('hAddBtn').onclick=()=>{
+    const nn=prompt('Nom (ex: Pull A, Cardio Course, Routine réveil) ?');if(!nn)return;
+    const dur=parseInt(prompt('Durée (minutes) ?','45'))||0;
+    const vol=parseInt(prompt('Volume (kg) ?','0'))||0;
+    const dateStamp=new Date(k);dateStamp.setHours(12);
+    S.history.push({date:dateStamp.getTime(),name:nn,duration:dur*60,volume:vol,exos:[]});
+    save();renderHist();
+  };
+}
+
+// CHRONO
+let chTick;
+function chNow(){return S.chrono.acc+(S.chrono.running?Date.now()-S.chrono.start:0)}
+function renderChrono(){
+  $('chDisp').textContent=fmtMs(chNow());
+  $('chStart').textContent=S.chrono.running?'Pause':'Démarrer';
+  const lp=$('chLaps');lp.innerHTML='';
+  S.chrono.laps.forEach((l,i)=>{const d=document.createElement('div');d.className='lap';d.innerHTML=`<span>Tour ${i+1}</span><b>${fmtMs(l)}</b>`;lp.appendChild(d)});
+  clearInterval(chTick);
+  if(S.chrono.running)chTick=setInterval(()=>{$('chDisp').textContent=fmtMs(chNow())},83);
+}
+$('chStart').addEventListener('click',()=>{
+  if(S.chrono.running){S.chrono.acc+=Date.now()-S.chrono.start;S.chrono.running=false}
+  else{S.chrono.start=Date.now();S.chrono.running=true}
+  save();renderChrono();
+});
+$('chLap').addEventListener('click',()=>{S.chrono.laps.unshift(chNow());save();renderChrono()});
+$('chReset').addEventListener('click',()=>{S.chrono={running:false,start:0,acc:0,laps:[]};save();renderChrono()});
+
+applyTheme();go('home');updateLive();
+window.addEventListener('beforeunload',save);
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+</script>
+</body>
+</html>
