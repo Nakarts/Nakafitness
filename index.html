@@ -228,7 +228,8 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
         <div><label class="sub">Cuisses</label><input id="mCui" type="number" inputmode="decimal" step="0.1"/></div>
         <div><label class="sub">Mollets</label><input id="mMol" type="number" inputmode="decimal" step="0.1"/></div>
       </div>
-      <button class="btn primary" style="width:100%;margin-top:10px" id="saveMens">Enregistrer la mesure du jour</button>
+      <div style="margin-top:8px"><label class="sub">Date de la mesure</label><input id="mDate" type="date"/></div>
+      <button class="btn primary" style="width:100%;margin-top:10px" id="saveMens">Enregistrer la mesure</button>
       <hr/>
       <h4>Évolution poids</h4>
       <canvas id="weightChart" height="180"></canvas>
@@ -244,8 +245,8 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
         <button class="chip" data-gsec="exos">Catalogue exos</button>
       </div>
     </div>
-    <div class="card" id="gsec-seances"><h3 class="title">Mes séances types</h3><div id="gSeanceList"></div><button class="btn ghost" style="width:100%;margin-top:8px" id="gAddSeance">＋ Nouvelle séance</button></div>
-    <div class="card hidden" id="gsec-wake"><h3 class="title">Routine réveil</h3><div id="gWakeList"></div><button class="btn ghost" style="width:100%;margin-top:8px" id="gAddWakeBlock">＋ Nouveau bloc</button></div>
+    <div class="card" id="gsec-seances"><h3 class="title">Mes séances types</h3><div id="gSeanceList"></div><div class="row" style="margin-top:8px;gap:6px"><button class="btn ghost" style="flex:1" id="gAddSeance">＋ Nouvelle séance</button><button class="btn danger" id="gResetSeances">↺ Réinitialiser</button></div></div>
+    <div class="card hidden" id="gsec-wake"><h3 class="title">Routine réveil</h3><div id="gWakeList"></div><div class="row" style="margin-top:8px;gap:6px"><button class="btn ghost" style="flex:1" id="gAddWakeBlock">＋ Nouveau bloc</button><button class="btn danger" id="gResetWake">↺ Réinitialiser</button></div></div>
     <div class="card hidden" id="gsec-exos"><h3 class="title">Catalogue d'exercices personnalisés</h3><div id="gExoList"></div><button class="btn ghost" style="width:100%;margin-top:8px" id="gAddExo">＋ Ajouter un exercice</button></div>
   </section>
 </div>
@@ -516,44 +517,59 @@ function renderGSeances(){
   const list=$('gSeanceList');list.innerHTML='';
   Object.entries(S.tpl).forEach(([k,t])=>{
     const d=document.createElement('div');d.className='exo';
-    d.innerHTML=`<div class="row" style="justify-content:space-between"><div><b>${t.n}</b><div class="sub">${t.d}</div></div><button class="btn sm danger">🗑</button></div>`;
+    d.innerHTML=`<div class="row" style="justify-content:space-between"><div><b>${t.n}</b><div class="sub">${t.d}</div></div><div class="row"><button class="btn sm ghost sEdit">✏️</button><button class="btn sm danger sDel">🗑</button></div></div>`;
     const exoWrap=document.createElement('div');exoWrap.style.marginTop='8px';
-    t.ex.forEach((e,ei)=>{const r=document.createElement('div');r.className='row';r.style.cssText='justify-content:space-between;padding:4px 0;border-top:1px solid var(--border)';
+    t.ex.forEach((e,ei)=>{const r=document.createElement('div');r.className='row';r.style.cssText='justify-content:space-between;padding:4px 0;border-top:1px solid var(--border);gap:6px';
       r.innerHTML=`<span style="flex:1">${e.n} <span class="sub">· ${e.sets}×${e.reps}</span></span>`;
+      const edit=document.createElement('button');edit.className='btn sm ghost';edit.textContent='✏️';
+      edit.onclick=()=>{const sets=parseInt(prompt('Séries ?',e.sets))||e.sets;const reps=prompt('Reps ?',e.reps)||e.reps;e.sets=sets;e.reps=reps;save();renderGSeances()};
       const del=document.createElement('button');del.className='btn sm ghost';del.textContent='✕';
-      del.onclick=()=>{t.ex.splice(ei,1);save();renderGSeances()};r.appendChild(del);exoWrap.appendChild(r)});
+      del.onclick=()=>{if(confirm('Supprimer cet exercice ?')){t.ex.splice(ei,1);save();renderGSeances()}};
+      r.appendChild(edit);r.appendChild(del);exoWrap.appendChild(r)});
     const add=document.createElement('button');add.className='btn sm ghost';add.style.marginTop='6px';add.textContent='＋ Exo';
     add.onclick=()=>openPickExo(n=>{const sets=parseInt(prompt('Séries ?','3'))||3;const reps=prompt('Reps ?','10')||'10';t.ex.push({n,sets,reps});save();renderGSeances()});
     exoWrap.appendChild(add);d.appendChild(exoWrap);
-    d.querySelector('.btn.danger').onclick=()=>{if(confirm('Supprimer cette séance ?')){delete S.tpl[k];save();renderGSeances()}};
+    d.querySelector('.sEdit').onclick=()=>{const nn=prompt('Nom ?',t.n);if(nn===null)return;const dd=prompt('Description ?',t.d)||t.d;t.n=nn||t.n;t.d=dd;save();renderGSeances()};
+    d.querySelector('.sDel').onclick=()=>{if(confirm('Supprimer cette séance ?')){delete S.tpl[k];save();renderGSeances()}};
     list.appendChild(d);
   });
 }
 $('gAddSeance').onclick=()=>{const n=prompt('Nom de la séance ?');if(!n)return;const k='c'+Date.now();S.tpl[k]={n,d:'Personnalisée',cls:'sess-reco',ex:[]};save();renderGSeances()};
+$('gResetSeances').onclick=()=>{if(confirm('Réinitialiser toutes les séances de base avec leurs exercices ? Vos séances personnalisées seront conservées.')){Object.keys(TPL).forEach(k=>{S.tpl[k]=structuredClone(TPL[k])});save();renderGSeances()}};
 
 function renderGWake(){
   const list=$('gWakeList');list.innerHTML='';
   S.wake.forEach((b,bi)=>{const d=document.createElement('div');d.className='exo';
-    d.innerHTML=`<div class="row" style="justify-content:space-between"><b>${b.b}</b><button class="btn sm danger">🗑</button></div>`;
-    b.ex.forEach((e,ei)=>{const r=document.createElement('div');r.className='row';r.style.cssText='justify-content:space-between;padding:4px 0;border-top:1px solid var(--border)';
+    d.innerHTML=`<div class="row" style="justify-content:space-between"><b>${b.b}</b><div class="row"><button class="btn sm ghost wbEdit">✏️</button><button class="btn sm danger wbDel">🗑</button></div></div>`;
+    b.ex.forEach((e,ei)=>{const r=document.createElement('div');r.className='row';r.style.cssText='justify-content:space-between;padding:4px 0;border-top:1px solid var(--border);gap:6px';
       r.innerHTML=`<span style="flex:1">${e.n} <span class="sub">· ${e.sec}s</span></span>`;
+      const edit=document.createElement('button');edit.className='btn sm ghost';edit.textContent='✏️';
+      edit.onclick=()=>{const nn=prompt('Nom ?',e.n)||e.n;const sec=parseInt(prompt('Durée (s) ?',e.sec))||e.sec;const dd=prompt('Description ?',e.d||'')||e.d;e.n=nn;e.sec=sec;e.d=dd;save();renderGWake()};
       const del=document.createElement('button');del.className='btn sm ghost';del.textContent='✕';
-      del.onclick=()=>{b.ex.splice(ei,1);save();renderGWake()};r.appendChild(del);d.appendChild(r)});
+      del.onclick=()=>{if(confirm('Supprimer cet exercice ?')){b.ex.splice(ei,1);save();renderGWake()}};
+      r.appendChild(edit);r.appendChild(del);d.appendChild(r)});
     const add=document.createElement('button');add.className='btn sm ghost';add.style.marginTop='6px';add.textContent='＋ Exo';
     add.onclick=()=>{const n=prompt('Nom ?');if(!n)return;const sec=parseInt(prompt('Durée (s) ?','30'))||30;const dd=prompt('Description ?','')||'';b.ex.push({n,d:dd,sec});save();renderGWake()};
     d.appendChild(add);
-    d.querySelector('.btn.danger').onclick=()=>{if(confirm('Supprimer ce bloc ?')){S.wake.splice(bi,1);save();renderGWake()}};
+    d.querySelector('.wbEdit').onclick=()=>{const nn=prompt('Nom du bloc ?',b.b);if(nn)b.b=nn;save();renderGWake()};
+    d.querySelector('.wbDel').onclick=()=>{if(confirm('Supprimer ce bloc ?')){S.wake.splice(bi,1);save();renderGWake()}};
     list.appendChild(d);
   });
 }
 $('gAddWakeBlock').onclick=()=>{const n=prompt('Nom du bloc ?');if(!n)return;S.wake.push({b:n,ex:[]});save();renderGWake()};
+$('gResetWake').onclick=()=>{if(confirm('Réinitialiser la routine réveil de base ?')){S.wake=structuredClone(WAKE_BLOCKS);save();renderGWake()}};
 
 function renderGExos(){
   const list=$('gExoList');list.innerHTML='';
-  S.customExo.forEach((e,ei)=>{const r=document.createElement('div');r.className='row';r.style.cssText='justify-content:space-between;padding:8px;border:1px solid var(--border);border-radius:10px;margin-bottom:6px';
-    r.innerHTML=`<span><b>${e.n}</b> <span class="sub">${e.c}</span></span>`;
+  S.customExo.forEach((e,ei)=>{const r=document.createElement('div');r.className='row';r.style.cssText='justify-content:space-between;padding:8px;border:1px solid var(--border);border-radius:10px;margin-bottom:6px;gap:6px';
+    r.innerHTML=`<span style="flex:1"><b>${e.n}</b> <span class="sub">${e.c}</span></span>`;
+    const edit=document.createElement('button');edit.className='btn sm ghost';edit.textContent='✏️';
+    edit.onclick=()=>{const nn=prompt('Nom ?',e.n)||e.n;const cc=prompt('Catégorie ?',e.c)||e.c;e.n=nn;e.c=cc;save();renderGExos()};
     const del=document.createElement('button');del.className='btn sm danger';del.textContent='🗑';
-    del.onclick=()=>{S.customExo.splice(ei,1);save();renderGExos()};r.appendChild(del);list.appendChild(r)});
+    del.onclick=()=>{if(confirm('Supprimer cet exercice ?')){S.customExo.splice(ei,1);save();renderGExos()}};
+    r.appendChild(edit);r.appendChild(del);list.appendChild(r)});
+  if(!S.customExo.length)list.innerHTML='<div class="sub">Aucun exo perso. Le catalogue de base contient déjà '+EXO.length+' exercices.</div>';
+}
   if(!S.customExo.length)list.innerHTML='<div class="sub">Aucun exo perso. Le catalogue de base contient déjà '+EXO.length+' exercices.</div>';
 }
 $('gAddExo').onclick=()=>{const n=prompt("Nom de l'exercice ?");if(!n)return;const c=prompt('Catégorie ('+CAT.join(', ')+') ?')||'Mobilité';S.customExo.push({n,c});save();renderGExos()};
@@ -643,7 +659,7 @@ function renderSession(){
       <label class="exo-imgL" for="${slotId}">${img?`<img src="${img}"/>`:'📷<br>Photo'}</label>
       <div class="exo-info">
         <h4>${e.n}</h4>
-        <div class="exo-meta"><span>${total}×${e.target||'—'}</span><span>⏱ 1:30</span><span class="prog">${doneCount}/${total}</span></div>
+        <div style="border-top:1px solid var(--border);margin-top:4px"></div>
         <div class="set-head"><span>Préc</span><span>${u1}</span><span>Préc</span><span>${u2}</span><span></span></div>
         <div class="sets-wrap"></div>
       </div>`;
@@ -747,13 +763,14 @@ function renderBilan(){
 document.querySelectorAll('[data-bsec]').forEach(b=>b.addEventListener('click',()=>{S.bsec=b.dataset.bsec;save();renderBilan()}));
 
 function renderMens(){
+  const todayISO=new Date().toISOString().slice(0,10);
+  if(!$('mDate').value)$('mDate').value=todayISO;
+  $('saveMens').textContent='Enregistrer la mesure';
   $('saveMens').onclick=()=>{
-    const m={date:Date.now(),poids:+$('mPoids').value||null,cou:+$('mCou').value||null,poit:+$('mPoit').value||null,tai:+$('mTai').value||null,bas:+$('mBas').value||null,bra:+$('mBra').value||null,cui:+$('mCui').value||null,mol:+$('mMol').value||null};
-    S.mensurations.push(m);save();renderMens();
+    const d=$('mDate').value?new Date($('mDate').value+'T12:00').getTime():Date.now();
+    const m={date:d,poids:+$('mPoids').value||null,cou:+$('mCou').value||null,poit:+$('mPoit').value||null,tai:+$('mTai').value||null,bas:+$('mBas').value||null,bra:+$('mBra').value||null,cui:+$('mCui').value||null,mol:+$('mMol').value||null};
+    S.mensurations.push(m);S.mensurations.sort((a,b)=>a.date-b.date);save();renderMens();
   };
-  const last=S.mensurations[S.mensurations.length-1];
-  if(last){$('mPoids').value=last.poids||'';$('mCou').value=last.cou||'';$('mPoit').value=last.poit||'';$('mTai').value=last.tai||'';$('mBas').value=last.bas||'';$('mBra').value=last.bra||'';$('mCui').value=last.cui||'';$('mMol').value=last.mol||''}
-  // Liste éditable
   let mListEl=$('mensList');
   if(!mListEl){mListEl=document.createElement('div');mListEl.id='mensList';mListEl.style.marginTop='10px';$('bsec-mens').appendChild(mListEl)}
   mListEl.innerHTML='<h4>Historique des mesures</h4>';
@@ -765,9 +782,10 @@ function renderMens(){
     r.innerHTML=`<div class="row" style="justify-content:space-between"><div><b>${dt}</b><div class="sub">Poids: ${m.poids||'—'}kg · Tour de taille: ${m.tai||'—'}cm · Bras: ${m.bra||'—'}cm</div></div><div class="row"><button class="btn sm ghost mEdit">✏️</button><button class="btn sm danger mDel">🗑</button></div></div>`;
     r.querySelector('.mDel').onclick=()=>{if(confirm('Supprimer cette mesure ?')){S.mensurations.splice(idx,1);save();renderMens()}};
     r.querySelector('.mEdit').onclick=()=>{
+      $('mDate').value=new Date(m.date).toISOString().slice(0,10);
       $('mPoids').value=m.poids||'';$('mCou').value=m.cou||'';$('mPoit').value=m.poit||'';$('mTai').value=m.tai||'';$('mBas').value=m.bas||'';$('mBra').value=m.bra||'';$('mCui').value=m.cui||'';$('mMol').value=m.mol||'';
       $('saveMens').textContent='💾 Mettre à jour cette mesure';
-      $('saveMens').onclick=()=>{Object.assign(S.mensurations[idx],{poids:+$('mPoids').value||null,cou:+$('mCou').value||null,poit:+$('mPoit').value||null,tai:+$('mTai').value||null,bas:+$('mBas').value||null,bra:+$('mBra').value||null,cui:+$('mCui').value||null,mol:+$('mMol').value||null});save();$('saveMens').textContent='Enregistrer la mesure du jour';renderMens()};
+      $('saveMens').onclick=()=>{const d=$('mDate').value?new Date($('mDate').value+'T12:00').getTime():m.date;Object.assign(S.mensurations[idx],{date:d,poids:+$('mPoids').value||null,cou:+$('mCou').value||null,poit:+$('mPoit').value||null,tai:+$('mTai').value||null,bas:+$('mBas').value||null,bra:+$('mBra').value||null,cui:+$('mCui').value||null,mol:+$('mMol').value||null});S.mensurations.sort((a,b)=>a.date-b.date);save();renderMens()};
     };
     mListEl.appendChild(r);
   });
